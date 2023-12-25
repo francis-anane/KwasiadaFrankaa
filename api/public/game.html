@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/stylesheets/game_board.css">
+    <style>
+        /* Additional styles for the player list */
+        #player-list {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        /* Additional styles for buttons */
+        #game-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 20px;
+            margin-left: 10px;
+            /* Adjusted margin for better spacing */
+        }
+
+        #game-controls button {
+            width: 150px;
+            /* Set a specific width for the buttons */
+            margin-bottom: 10px;
+            /* Added margin between buttons */
+            padding: 10px;
+            /* Added padding for better aesthetics */
+            background-color: #0000FF;
+            /* Blue background color */
+            color: white;
+            /* White text color */
+            border: none;
+            /* Remove button border */
+            border-radius: 5px;
+            /* Add a slight border radius */
+            cursor: pointer;
+            /* Add cursor pointer on hover */
+        }
+
+        #game-controls button:hover {
+            background-color: #45a049;
+            /* Darker green on hover */
+        }
+
+        /* Styles for the rectangle */
+        .game-objects-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            /* Adjust the margin as needed */
+        }
+
+        .game-objects-cell {
+            width: 30px;
+            /* Set the width of each cell */
+            height: 30px;
+            /* Set the height of each cell */
+            background-color: #ccc;
+            /* Set the background color */
+            border: 1px solid #aaa;
+            /* Add a border for better visibility */
+        }
+    </style>
+    <title>Kwasiada Frankaa</title>
+</head>
+
+<body>
+    <div id="player-list">
+        <h2>Player List</h2>
+        <ul id="players">
+            <!-- Player list items will be dynamically generated here -->
+        </ul>
+    </div>
+
+    <div id="game-board" class="board">
+        <!-- Game board cells will be dynamically generated here -->
+    </div>
+
+    <div id="game-controls">
+        <button id="invite-opponent" onclick="fetchOnlinePlayers()">Invite Opponent</button>
+        <button id="play-alone">Play Alone</button>
+    </div>
+
+    <script src="/javascripts/game_board.js"></script>
+    <script src="/javascripts/online_players.js"></script>
+    <script src="/javascripts/single_player_game.js"></script>
+    <script src="/javascripts/game_objects.js"></script>
+    <!-- Script tag for socket.io-client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+
+</body>
+
+</html>
