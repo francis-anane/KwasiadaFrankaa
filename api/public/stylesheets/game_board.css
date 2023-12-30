@@ -22,3 +22,66 @@
 .cell:hover {
     background-color: #eee;
 }
+
+ /* Additional styles for the player list */
+ #player-list {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+}
+
+/* Additional styles for buttons */
+#game-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 20px;
+    margin-left: 10px;
+    /* Adjusted margin for better spacing */
+}
+
+#game-controls button {
+    width: 150px;
+    /* Set a specific width for the buttons */
+    margin-bottom: 10px;
+    /* Added margin between buttons */
+    padding: 10px;
+    /* Added padding for better aesthetics */
+    background-color: #0000FF;
+    /* Blue background color */
+    color: white;
+    /* White text color */
+    border: none;
+    /* Remove button border */
+    border-radius: 5px;
+    /* Add a slight border radius */
+    cursor: pointer;
+    /* Add cursor pointer on hover */
+}
+
+#game-controls button:hover {
+    background-color: #45a049;
+    /* Darker green on hover */
+}
+
+/* Styles for the rectangle */
+.game-objects-container {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+    /* Adjust the margin as needed */
+}
+
+.game-objects-cell {
+    width: 30px;
+    /* Set the width of each cell */
+    height: 30px;
+    /* Set the height of each cell */
+    background-color: #ccc;
+    /* Set the background color */
+    border: 1px solid #aaa;
+    /* Add a border for better visibility */
+}

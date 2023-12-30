@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function startSinglePlayerGame() {
     try {
-      const symbolColor = 
       // Fetch the current player information or any necessary data from the server
       //const response = await fetch('/api/currentPlayer'); // Replace with your actual endpoint
       //const currentPlayer = await response.json();

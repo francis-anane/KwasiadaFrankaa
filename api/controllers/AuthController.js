@@ -1,32 +1,45 @@
+// ./controllers/AuthController.js
 import passport from 'passport';
 import AuthModel from '../models/AuthModel.js';
 import redisModel from '../utils/redis.js';
 
 class AuthController {
+  // Store logged-in players (consider using a centralized session store for scalability)
   static loggedInPlayers = [];
+
   /**
    * Handles player login using Passport.js local strategy.
    * Generates and attaches a JWT token upon successful authentication.
    */
   static loginHandler(req, res, next) {
+    // Passport.js authentication middleware
     passport.authenticate('local', (err, player, info) => {
-      if (err) {
-        // Log the error for debugging purposes
-        console.error('Error during authentication:', err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-      }
-      if (!player) {
-        return res.status(401).json({ error: info.message });
-      }
+      try {
+        if (err) {
+          console.error('Error during authentication:', err);
+          return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        
+        // Check if authentication was unsuccessful
+        if (!player) {
+          return res.status(401).json({ error: info.message });
+        }
 
-      //redisModel.storePlayer(player.id, player);
-      AuthController.loggedInPlayers.push(player);
-      // Generate JWT token
-      const token = AuthModel.generateToken(player);
+        // Store player in-memory (consider using a centralized session store for scalability)
+        AuthController.loggedInPlayers.push(player);
 
-      // Attach token to response
-      res.json({ success: true, token, player: player });
-      // Immediately invoke the returned function with req, res, and next arguments
+        // Generate JWT token
+        const token = AuthModel.generateToken(player);
+
+        // Include additional player details in the response
+        const playerDetails = { playerId: player.id, playerName: player.playerName, email: player.email };
+
+        // Attach token and player details to response
+        res.json({ success: true, token, player: playerDetails });
+      } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
     })(req, res, next);
   }
 
@@ -35,10 +48,11 @@ class AuthController {
    */
   static logoutHandler(req, res) {
     try {
+      // Logout the player by clearing the session
       req.logout();
+
       res.json({ success: true, message: 'Logout successful' });
     } catch (error) {
-      // Handle potential errors during logout
       console.error('Error during logout:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -50,10 +64,18 @@ class AuthController {
    * Otherwise, returns an unauthorized error.
    */
   static isAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-      return next();
+    try {
+      // Check if the player is authenticated
+      if (req.isAuthenticated()) {
+        return next();
+      }
+
+      // Player is not authenticated, return an unauthorized error
+      return res.status(401).json({ error: 'Unauthorized' });
+    } catch (error) {
+      console.error('Error during authentication check:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
-    return res.status(401).json({ error: 'Unauthorized' });
   }
 }
 

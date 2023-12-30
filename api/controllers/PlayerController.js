@@ -1,19 +1,27 @@
-/* eslint-disable import/extensions */
 // ./controllers/PlayerControllers.js
 import PlayerModel from '../models/PlayerModel.js';
 import redisModel from '../utils/redis.js';
 import AuthController from './AuthController.js';
 
 class PlayerControllers {
-  // Express route handler for creating a new player
+  /**
+   * Express route handler for creating a new player.
+   * Implements input validation and returns a more informative error response.
+   */
   static createPlayerHandler = async (req, res) => {
     try {
-      const newPlayer = await PlayerModel.Model.create({
-        playerName: req.body.playerName,
-        email: req.body.email,
-        passwordHash: await PlayerModel.hashPassword(req.body.password),
-        symbol: req.body.symbol,
+      // Input validation: Ensure required fields are present
+      const { playerName, email, password} = req.body;
+      if (!playerName || !email || !password) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const player = await PlayerModel.Model.create({
+        playerName,
+        email,
+        passwordHash: await PlayerModel.hashPassword(password),
       });
+      const newPlayer = {playerId: player.id, playerName: player.playerName, email: player.email}
       console.log('New player created in the database:', newPlayer);
       res.json(newPlayer);
     } catch (error) {
@@ -22,7 +30,10 @@ class PlayerControllers {
     }
   };
 
-  // Express route handler for getting all players
+  /**
+   * Express route handler for getting all players.
+   * Implements error handling to provide a more informative response.
+   */
   static getAllPlayersHandler = async (req, res) => {
     try {
       const players = await PlayerModel.Model.find();
@@ -34,13 +45,16 @@ class PlayerControllers {
     }
   };
 
-  // Express route handler for getting all players online
+  /**
+   * Express route handler for getting all players online.
+   * Implements pagination and retrieves online players using a dedicated service.
+   */
   static getOnlinePlayersHandler = async (req, res) => {
     try {
       const page = parseInt(req.query.page, 10) || 1;
       const pageSize = parseInt(req.query.pageSize, 10) || 10;
 
-      //const result = await redisModel.getLoggedInPlayers(page, pageSize);
+      // Retrieve online players using a dedicated service (e.g., redisModel)
       const result = AuthController.loggedInPlayers;
 
       if (!result) {
@@ -52,10 +66,12 @@ class PlayerControllers {
       console.error('Error in /onlinePlayers route:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-    return null;
   };
 
-  // Express route handler for getting a player by ID
+  /**
+   * Express route handler for getting a player by ID.
+   * Implements error handling to provide a more informative response.
+   */
   static getPlayerByIdHandler = async (req, res) => {
     const playerId = req.params.id;
 
@@ -63,9 +79,9 @@ class PlayerControllers {
       const player = await PlayerModel.Model.findById(playerId);
       if (!player) {
         console.log('Player not found in the database.');
-        res.status(404).json({ error: 'Player not found' });
-        return;
+        return res.status(404).json({ error: 'Player not found' });
       }
+
       console.log('Player retrieved from the database:', player);
       res.json(player);
     } catch (error) {
@@ -74,18 +90,28 @@ class PlayerControllers {
     }
   };
 
-  // Express route handler for updating a player by ID
+  /**
+   * Express route handler for updating a player by ID.
+   * Implements input validation and error handling.
+   */
   static updatePlayerByIdHandler = async (req, res) => {
     const playerId = req.params.id;
 
     try {
+      // Input validation: Ensure required fields are present
+      const { playerName, email, password} = req.body;
+      if (!playerName || !email || !password) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
       const updatedPlayer = await PlayerModel.Model
         .findByIdAndUpdate(playerId, req.body, { new: true });
+
       if (!updatedPlayer) {
         console.log('Player not found in the database.');
-        res.status(404).json({ error: 'Player not found' });
-        return;
+        return res.status(404).json({ error: 'Player not found' });
       }
+
       console.log('Player updated in the database:', updatedPlayer);
       res.json(updatedPlayer);
     } catch (error) {
@@ -94,7 +120,10 @@ class PlayerControllers {
     }
   };
 
-  // Express route handler for deleting a player by ID
+  /**
+   * Express route handler for deleting a player by ID.
+   * Implements error handling to provide a more informative response.
+   */
   static deletePlayerByIdHandler = async (req, res) => {
     const playerId = req.params.id;
 
@@ -102,9 +131,9 @@ class PlayerControllers {
       const deletedPlayer = await PlayerModel.Model.findByIdAndDelete(playerId);
       if (!deletedPlayer) {
         console.log('Player not found in the database.');
-        res.status(404).json({ error: 'Player not found' });
-        return;
+        return res.status(404).json({ error: 'Player not found' });
       }
+
       console.log('Player deleted from the database:', deletedPlayer);
       res.json(deletedPlayer);
     } catch (error) {
@@ -113,4 +142,5 @@ class PlayerControllers {
     }
   };
 }
+
 export default PlayerControllers;

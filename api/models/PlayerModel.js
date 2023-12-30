@@ -1,3 +1,4 @@
+// ./models/PlayerModel.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
@@ -7,12 +8,19 @@ class PlayerModel {
   // Define the player schema
   static playerSchema = new mongoose.Schema({
     playerName: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      // Adding email validation using a regular expression
+      match: /^\S+@\S+\.\S+$/,
+    },
     passwordHash: { type: String, required: true },
     currentGameBoard: { type: [[String, String, String], [String, String, String],
       [String, String, String]], required: true,  default: [['', '', ''], ['', '', ''], ['', '', '']] },
     symbolColor: { type: String, enum: ['red', 'blue'], required: false },
-    opponent: {type: String, enum: ['computer', 'person'], required: false }
+    opponent: {type: String, enum: ['computer', 'person'], required: false },
+    socketId: { type: String, required: false },
   });
 
   // Create the Player model

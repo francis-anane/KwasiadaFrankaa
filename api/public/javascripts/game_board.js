@@ -1,7 +1,30 @@
+// ./public/javascripts/game_board.js
+// This file contains the JavaScript code for the game board.
+import socket from './socket.js';
+import { currentPlayer } from './player_session_data.js';
+
+console.log('game_board.js executed');
+console.log('Player data in localStorage:', localStorage.player);
+// Function to retrieve player data from localStorage
+function getPlayerData() {
+  const storedPlayer = localStorage.getItem('player');
+  return storedPlayer ? JSON.parse(storedPlayer) : null;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+
+  // Retrieve player data from localStorage
+  const playerData = getPlayerData();
+
+  if (playerData) {
+    console.log('Player data retrieved:', playerData);
+    // Use playerData as needed
+  } else {
+    console.error('Player data not found in localStorage.');
+  }
+
   const board = document.getElementById('game-board');
   let sourceCell = null; // To store the source cell index
-  const socket = io(); // Initialize socket.io-client
 
    // Handle cell click event
    function handleCellClick(event) {

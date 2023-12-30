@@ -1,6 +1,6 @@
+// ./app.js
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/extensions */
-// ./app.js
 import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
@@ -9,7 +9,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import passport from 'passport';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path'; // Connect to the database
+import { dirname } from 'path';
 import indexRouter from './routes/index.js';
 import authRouter from './routes/auth.js';
 import playerRouter from './routes/player.js';
@@ -17,6 +17,7 @@ import ChatModel from './models/ChatModel.js';
 import GameModel from './models/GameModel.js';
 import AuthModel from './models/AuthModel.js';
 import redisModel from './utils/redis.js';
+import PlayerModel from './models/PlayerModel.js';
 import './utils/db.js';
 
 const app = express();
@@ -26,8 +27,10 @@ const io = new Server(server);
 
 const startServer = async () => {
   try {
-    await redisModel.openConnection(); // Connect to Redis
+    // Connect to Redis
+    await redisModel.openConnection();
     console.log('After Redis connection');
+    
     if (redisModel.isAlive()) {
       console.log('Redis is alive');
     } else {
@@ -48,7 +51,7 @@ process.on('SIGINT', () => {
   process.exit();
 });
 
-// Initialize Passport authentication for app by this call
+// Initialize Passport authentication for the app
 app.use(passport.initialize());
 AuthModel.initialize(); // setup passport for local strategy authentication
 
@@ -60,6 +63,7 @@ app.use(cookieParser());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
 // Set static path
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -81,9 +85,27 @@ io.on('connection', (socket) => {
   const chatModel = new ChatModel(io);
   const gameModel = new GameModel(io);
 
+  // Associate socket ID with player
+  socket.on('setSocketId', (playerId) => {
+    // Find player by ID and set their socketId
+    PlayerModel.Model.findById(playerId)
+      .then((player) => {
+        if (player) {
+          player.socketId = socket.id;
+          console.log(`Player ${playerId} connected with socket ID: ${socket.id}`);
+        } else {
+          console.error(`Player not found for ID: ${playerId}`);
+        }
+      })
+      .catch((error) => {
+        console.error('Error setting socket ID:', error);
+      });
+  });
+
   // Handle new chat messages
-  socket.on('sendMessage', (data) => {
+  socket.on('sendMessageToOpponent', (data) => {
     try {
+      console.log('data:', data);
       const { player, message } = data;
       chatModel.sendMessage(player, message);
     } catch (error) {
@@ -107,9 +129,7 @@ io.on('connection', (socket) => {
   // Handle player moves
   socket.on('makeMove', (data) => {
     const currentPlayerSocketId = socket.id;
-    const {
-      srcRow, srcCol, destRow, destCol,
-    } = data;
+    const { srcRow, srcCol, destRow, destCol } = data;
 
     gameModel.makeMoveHandler(srcRow, srcCol, destRow, destCol, currentPlayerSocketId);
   });

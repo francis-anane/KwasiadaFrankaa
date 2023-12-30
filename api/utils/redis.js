@@ -1,5 +1,6 @@
-import { promisify } from 'util';
+// ./utils/redis.js
 
+import { promisify } from 'util';
 import redis from 'redis';
 
 class RedisModel {
@@ -14,17 +15,22 @@ class RedisModel {
 
   // Open the Redis connection
   openConnection() {
-    // this.client = redis.createClient({ host: this.host, port: this.port });
-    this.client = redis.createClient();
+    // Use try-catch for error handling during connection setup
+    try {
+      this.client = redis.createClient({ host: this.host, port: this.port });
 
-    this.client.on('error', (err) => {
-      console.error('Redis error:', err);
-    });
+      // Handle Redis connection errors
+      this.client.on('error', (err) => {
+        console.error('Redis error:', err);
+      });
 
-    // Promisify Redis commands for the instance
-    this.getAsync = promisify(this.client.get).bind(this.client);
-    this.setAsync = promisify(this.client.set).bind(this.client);
-    this.delAsync = promisify(this.client.del).bind(this.client);
+      // Promisify Redis commands for the instance
+      this.getAsync = promisify(this.client.get).bind(this.client);
+      this.setAsync = promisify(this.client.set).bind(this.client);
+      this.delAsync = promisify(this.client.del).bind(this.client);
+    } catch (error) {
+      console.error('Error opening Redis connection:', error);
+    }
   }
 
   // Close the Redis connection
@@ -37,18 +43,21 @@ class RedisModel {
 
   // Method to check if the Redis server is alive
   isAlive() {
-    return this.client.connected; // return true / false
+    return this.client ? this.client.connected : false; // return true / false
   }
 
   // Store player data in Redis cache
   async storePlayer(playerId, data) {
     try {
-      if (!this.client) {
-        this.openConnection(); // Open the connection if not already open
+      // Ensure the Redis connection is open before performing operations
+      if (!this.client || !this.client.connected) {
+        this.openConnection();
       }
 
       const key = `player:${playerId}`;
       const serializedData = JSON.stringify(data);
+
+      // Use async/await for cleaner error handling
       await this.setAsync(key, serializedData, 'EX', this.CACHE_EXPIRATION_SECONDS);
     } catch (error) {
       console.error('Error storing player data in Redis:', error);
@@ -58,12 +67,14 @@ class RedisModel {
   // Retrieve player data from Redis cache
   async getPlayer(playerId) {
     try {
-      if (!this.client) {
-        this.openConnection(); // Open the connection if not already open
+      if (!this.client || !this.client.connected) {
+        this.openConnection();
       }
 
       const key = `player:${playerId}`;
       const cachedData = await this.getAsync(key);
+
+      // Use a ternary operator for a concise null check
       return cachedData ? JSON.parse(cachedData) : null;
     } catch (error) {
       console.error('Error retrieving player data from Redis:', error);
@@ -74,8 +85,8 @@ class RedisModel {
   // Remove player data from Redis cache
   async removePlayer(playerId) {
     try {
-      if (!this.client) {
-        this.openConnection(); // Open the connection if not already open
+      if (!this.client || !this.client.connected) {
+        this.openConnection();
       }
 
       const key = `player:${playerId}`;
@@ -90,17 +101,17 @@ class RedisModel {
     try {
       if (!this.client || !this.client.connected) {
         console.log('Reopening Redis connection in getLoggedInPlayers');
-        this.openConnection(); // Open the connection if not already open
+        this.openConnection();
       }
-  
+
       const cursor = '0'; // Start at the beginning
       const match = 'player:*';
       const count = pageSize;
       const players = [];
-  
+
       // Use SCAN command for pagination
       const [newCursor, keys] = await this.client.scan(cursor, 'MATCH', match, 'COUNT', count);
-  
+
       // Iterate through keys and fetch player data
       for await (const key of keys) {
         const cachedData = await this.getAsync(key);
@@ -109,10 +120,10 @@ class RedisModel {
           players.push(playerData);
         }
       }
-  
+
       // Determine if there's a next page based on keys length
       const nextPage = keys.length === count ? parseInt(newCursor, 10) : null;
-  
+
       return {
         players,
         nextPage,
@@ -121,8 +132,9 @@ class RedisModel {
       console.error('Error getting logged-in players from Redis:', error);
       return null;
     }
-  }  
+  }
 }
 
+// Create a single instance of RedisModel to be used throughout the application
 const redisModel = new RedisModel();
 export default redisModel;

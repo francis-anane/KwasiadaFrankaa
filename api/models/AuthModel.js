@@ -9,16 +9,16 @@ import PlayerModel from './PlayerModel.js';
 class AuthModel {
   // Initialize authentication strategies and serialization
   static initialize() {
-    // Serialize user to store in session
+    // Serialize player to store in session
     passport.serializeUser((user, done) => {
       done(null, user.id);
     });
 
-    // Deserialize user from session
+    // Deserialize player from session
     passport.deserializeUser(async (id, done) => {
       try {
-        const user = await PlayerModel.Model.findById(id);
-        done(null, user);
+        const player = await PlayerModel.Model.findById(id);
+        done(null, player);
       } catch (err) {
         done(err);
       }
@@ -30,16 +30,16 @@ class AuthModel {
         { usernameField: 'email', passwordField: 'password' },
         async (email, password, done) => {
           try {
-            // Find user by email
-            const user = await PlayerModel.Model.findOne({ email });
+            // Find player by email
+            const player = await PlayerModel.Model.findOne({ email });
 
-            // Check if user exists and password is valid
-            if (!user || !bcrypt.compareSync(password, user.passwordHash)) {
+            // Check if player exists and password is valid
+            if (!player || !bcrypt.compareSync(password, player.passwordHash)) {
               return done(null, false, { message: 'Invalid email or password' });
             }
 
             // Authentication successful
-            return done(null, user);
+            return done(null, player);
           } catch (err) {
             return done(err);
           }
@@ -57,19 +57,7 @@ class AuthModel {
     return jwt.sign(payload, secretKey, options);
   }
 
-  static async authenticate(email, password, done) {
-    try {
-      const user = await PlayerModel.Model.findOne({ email });
 
-      if (!user || !bcrypt.compareSync(password, user.passwordHash)) {
-        return done(null, false, { message: 'Invalid email or password' });
-      }
-
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  }
 }
 
 export default AuthModel;

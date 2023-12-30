@@ -3,97 +3,113 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/wooden_brown">
+    android:layout_height="match_parent">
 
-    <TableLayout
-        android:id="@+id/board_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginBottom="50dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Row 1 -->
-        <TableRow
-            android:id="@+id/row0"
+
+        <!-- Apply the style to each button -->
+        <Button
+            android:id="@+id/row0_column0"
+            style="@style/GameBoardButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/row0_column1"
+            style="@style/GameBoardButton"
+            app:layout_constraintStart_toEndOf="@+id/row0_column0"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/row0_column2"
+            style="@style/GameBoardButton"
+            app:layout_constraintStart_toEndOf="@+id/row0_column1"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/row1_column0"
+            style="@style/GameBoardButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/row0_column0" />
+
+        <Button
+            android:id="@+id/row1_column1"
+            style="@style/GameBoardButton"
+            app:layout_constraintStart_toEndOf="@+id/row1_column0"
+            app:layout_constraintTop_toBottomOf="@+id/row0_column1" />
+
+        <Button
+            android:id="@+id/row1_column2"
+            style="@style/GameBoardButton"
+            app:layout_constraintStart_toEndOf="@+id/row1_column1"
+            app:layout_constraintTop_toBottomOf="@+id/row0_column2" />
+
+        <Button
+            android:id="@+id/row2_column0"
+            style="@style/GameBoardButton"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/row1_column0" />
+
+        <Button
+            android:id="@+id/row2_column1"
+            style="@style/GameBoardButton"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/row2_column0"
+            app:layout_constraintTop_toBottomOf="@+id/row1_column1" />
+
+        <Button
+            android:id="@+id/row2_column2"
+            style="@style/GameBoardButton"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/row2_column1"
+            app:layout_constraintTop_toBottomOf="@+id/row1_column2" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/editText"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:layout_editor_absoluteX="16dp" />
+
+        <EditText
+            android:id="@+id/editText"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:gravity="center">
+            android:hint="Enter message"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/button"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            <Button
-                android:id="@+id/row0_column0"
-                android:layout_width="0dp"
-                android:layout_height="150dp"
-                android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/row0_column1"
-                android:layout_width="0dp"
-                android:layout_height="150dp"
-                android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/row0_column2"
-                android:layout_width="0dp"
-                android:layout_height="150dp"
-                android:layout_weight="1" />
-
-        </TableRow>
-
-        <!-- Row 2 -->
-        <TableRow
-            android:id="@+id/row1"
+        <Button
+            android:id="@+id/button"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:gravity="center">
+            android:text="Send"
+            app:layout_constraintBottom_toBottomOf="@+id/editText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/editText" />
 
-            <Button
-                android:id="@+id/row1_column0"
-                android:layout_width="0dp"
-                android:layout_height="150dp"
-                android:layout_weight="1" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <Button
-                android:id="@+id/row1_column1"
-                android:layout_width="0dp"
-                android:layout_height="150dp"
-                android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/row1_column2"
-                android:layout_width="0dp"
-                android:layout_height="150dp"
-                android:layout_weight="1" />
-
-        </TableRow>
-
-        <!-- Row 3 -->
-        <TableRow
-            android:id="@+id/row2"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:gravity="center">
-
-            <Button
-                android:id="@+id/row2_column0"
-                android:layout_width="0dp"
-                android:layout_height="150dp"
-                android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/row2_column1"
-                android:layout_width="0dp"
-                android:layout_height="150dp"
-                android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/row2_column2"
-                android:layout_width="0dp"
-                android:layout_height="150dp"
-                android:layout_weight="1" />
-
-        </TableRow>
-    </TableLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

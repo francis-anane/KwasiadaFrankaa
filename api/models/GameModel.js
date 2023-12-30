@@ -1,4 +1,4 @@
-// ./models/Game.js
+// ./models/GameModel.js
 import PlayerModel from './PlayerModel.js';
 
 class GameModel {
@@ -13,34 +13,37 @@ class GameModel {
 
     this.currentPlayerIndex = 0; // Index of the current player in the players array
   }
+
   // Initialize the game board
   initializeGameBoard() {
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          this.gameBoardArray[i][j] = ''; // Initialize with empty values
-        }
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        this.gameBoard[i][j] = ''; // Initialize with empty values
       }
     }
-  
+  }
 
   // Add a player to the game
-  async addPlayer(playerId, socketId) {
-    try {
-      // Fetch player data by ID
-      const playerData = await PlayerModel.Model.findById(playerId);
+  addPlayer(playerId, socketId) {
+    let playerData;
 
-      if (!playerData) {
-        throw new Error('Error fetching player data');
-      }
+    // Fetch player data by ID
+    return PlayerModel.Model.findById(playerId)
+      .then((foundPlayer) => {
+        if (!foundPlayer) {
+          throw new Error('Error fetching player data');
+        }
 
-      const symbolColor = this.players.length === 0 ? 'red' : 'blue';
-      this.players.push({ ...playerData, symbolColor, socketId });
+        playerData = foundPlayer;
+        const symbolColor = this.players.length === 0 ? 'red' : 'blue';
+        this.players.push({ ...playerData, symbolColor, socketId });
 
-      return { success: true, player: { ...playerData, symbolColor } };
-    } catch (error) {
-      console.error('Error adding player to the game:', error.message);
-      throw new Error('Internal Server Error');
-    }
+        return { success: true, player: { ...playerData, symbolColor } };
+      })
+      .catch((error) => {
+        console.error('Error adding player to the game:', error.message);
+        throw new Error('Internal Server Error');
+      });
   }
 
   // Switch the turn to the next player
@@ -74,8 +77,9 @@ class GameModel {
       const rowValues = this.gameBoard[row].join('');
       if (rowValues === playerOne) {
         return { winner: this.players.find((player) => player.symbolColor === 'red'), type: 'horizontal', row };
-      } if (rowValues === playerTwo) {
-        return { winner: this.players.find((player) => player.symbolColor  === 'blue'), type: 'horizontal', row };
+      }
+      if (rowValues === playerTwo) {
+        return { winner: this.players.find((player) => player.symbolColor === 'blue'), type: 'horizontal', row };
       }
     }
 
@@ -84,7 +88,8 @@ class GameModel {
       const colValues = this.gameBoard.map((row) => row[col]).join('');
       if (colValues === playerOne) {
         return { winner: this.players.find((player) => player.symbolColor === 'red'), type: 'vertical', col };
-      } if (colValues === playerTwo) {
+      }
+      if (colValues === playerTwo) {
         return { winner: this.players.find((player) => player.symbolColor === 'blue'), type: 'vertical', col };
       }
     }
@@ -95,7 +100,8 @@ class GameModel {
 
     if (leftDiagonal === playerOne || rightDiagonal === playerOne) {
       return { winner: this.players.find((player) => player.symbolColor === 'red'), type: 'diagonal' };
-    } if (leftDiagonal === playerTwo || rightDiagonal === playerTwo) {
+    }
+    if (leftDiagonal === playerTwo || rightDiagonal === playerTwo) {
       return { winner: this.players.find((player) => player.symbolColor === 'blue'), type: 'diagonal' };
     }
 
@@ -109,7 +115,17 @@ class GameModel {
 
   // Handle player joining the game
   joinGameHandler(playerData, socketId) {
-    this.addPlayer(playerData, socketId)
+    let playerId;
+
+    // Find the player by ID and set their socketId
+    PlayerModel.Model.findById(playerId)
+      .then((player) => {
+        if (player) {
+          player.socketId = socketId;
+        }
+
+        return this.addPlayer(playerData, socketId);
+      })
       .then((success) => {
         if (success) {
           this.io.emit('gameState', this.getGameState());
@@ -182,14 +198,14 @@ class GameModel {
         console.error('Player not found:', socketId);
         this.io.to(socketId).emit('error', 'Player not found');
         return;
-    }
+      }
 
       // Check if the move is valid
       if (
-        this.isValidPosition(srcRow, srcCol)
-        && this.isValidPosition(destRow, destCol)
-        && this.players.length === 2
-        && currentPlayer === this.getCurrentPlayer()
+        this.isValidPosition(srcRow, srcCol) &&
+        this.isValidPosition(destRow, destCol) &&
+        this.players.length === 2 &&
+        currentPlayer === this.getCurrentPlayer()
       ) {
         // Make the move
         this.moveObject(srcRow, srcCol, destRow, destCol);
