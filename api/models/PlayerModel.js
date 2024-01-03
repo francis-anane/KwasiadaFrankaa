@@ -7,7 +7,7 @@ const saltRounds = 10;
 class PlayerModel {
   // Define the player schema
   static playerSchema = new mongoose.Schema({
-    playerName: { type: String, required: true },
+    name: { type: String, required: true },
     email: {
       type: String,
       required: true,
@@ -16,10 +16,13 @@ class PlayerModel {
       match: /^\S+@\S+\.\S+$/,
     },
     passwordHash: { type: String, required: true },
-    currentGameBoard: { type: [[String, String, String], [String, String, String],
+    gameBoard: { type: [[String, String, String], [String, String, String],
       [String, String, String]], required: true,  default: [['', '', ''], ['', '', ''], ['', '', '']] },
-    symbolColor: { type: String, enum: ['red', 'blue'], required: false },
-    opponent: {type: String, enum: ['computer', 'person'], required: false },
+    playerSymbol: { type: String, enum: ['red', 'blue'], required: false },
+    opponentSymbol: { type: String, enum: ['red', 'blue'], required: false },
+    isYourTurn: {type: Boolean, enum: [true, false], required: false},
+    hasWon: {type: Boolean, enum: [true, false], required: false},
+    moveCount: {type: Number, required: false, default: 0},
     socketId: { type: String, required: false },
   });
 

@@ -102,14 +102,30 @@ io.on('connection', (socket) => {
       });
   });
 
+  socket.on('singlePlayer', (data) => {
+    console.log('data', data)
+
+      const player = gameModel.singlePlayerGame(data);
+      console.log('player', player);
+      const gameWinner = gameModel.setWinner(player);
+      if (gameWinner) {
+        io.emit('gameWinner', gameWinner);
+      }
+      else{
+        io.emit('nextMove', player);
+      
+      }
+      
+  });
+
   // Handle new chat messages
-  socket.on('sendMessageToOpponent', (data) => {
+  socket.on('message', (data) => {
     try {
       console.log('data:', data);
       const { player, message } = data;
       chatModel.sendMessage(player, message);
     } catch (error) {
-      console.error('Error processing sendMessage:', error);
+      console.error('Error processing message:', error);
       socket.emit('error', { message: 'An error occurred while processing the message.' });
     }
   });
@@ -128,7 +144,9 @@ io.on('connection', (socket) => {
 
   // Handle player moves
   socket.on('makeMove', (data) => {
+    console.log(data)
     const currentPlayerSocketId = socket.id;
+    console.log('currentPlayerSocketId:', currentPlayerSocketId);
     const { srcRow, srcCol, destRow, destCol } = data;
 
     gameModel.makeMoveHandler(srcRow, srcCol, destRow, destCol, currentPlayerSocketId);

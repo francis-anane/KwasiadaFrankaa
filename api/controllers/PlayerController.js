@@ -11,17 +11,18 @@ class PlayerControllers {
   static createPlayerHandler = async (req, res) => {
     try {
       // Input validation: Ensure required fields are present
-      const { playerName, email, password} = req.body;
-      if (!playerName || !email || !password) {
+      const { name, email, password } = req.body;
+      if (!name || !email || !password) {
+        console.log(req.body);
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
       const player = await PlayerModel.Model.create({
-        playerName,
+        name,
         email,
         passwordHash: await PlayerModel.hashPassword(password),
       });
-      const newPlayer = {playerId: player.id, playerName: player.playerName, email: player.email}
+      const newPlayer = {playerId: player.id, name: player.name, email: player.email}
       console.log('New player created in the database:', newPlayer);
       res.json(newPlayer);
     } catch (error) {
@@ -99,8 +100,8 @@ class PlayerControllers {
 
     try {
       // Input validation: Ensure required fields are present
-      const { playerName, email, password} = req.body;
-      if (!playerName || !email || !password) {
+      const {name, email, password} = req.body;
+      if (!name || !email || !password) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 

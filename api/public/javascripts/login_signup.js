@@ -12,13 +12,13 @@ async function signup() {
   const password = document.getElementById('signupPassword').value;
 
   try {
-    const response = await fetch('/api/register', {
+    const response = await fetch('/api/players/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        playerName: name,
+        name: name,
         email,
         password,
       }),
@@ -45,7 +45,7 @@ async function login() {
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPassword').value;
   try {
-    const response = await fetch('/api/login', {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

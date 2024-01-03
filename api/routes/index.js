@@ -26,7 +26,7 @@ indexRouter.get('/', (req, res) => {
 });
 
 // Define a route for the /gameBoard URL
-indexRouter.get('/gameBoard', (req, res) => {
+indexRouter.get('/game/gameBoard', (req, res) => {
   // Render the game.html file from the public directory
   sendFileSafe(res, 'game.html');
 });
