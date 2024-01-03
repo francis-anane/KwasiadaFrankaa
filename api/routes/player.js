@@ -6,9 +6,9 @@ const playerRouter = express.Router();
 
 // Player routes
 // creates a new player on the game
-playerRouter.post('/register', PlayerController.createPlayerHandler);
-playerRouter.get('/players', PlayerController.getAllPlayersHandler); // get all players data
-playerRouter.get('/onlinePlayers', PlayerController.getOnlinePlayersHandler);
+playerRouter.post('/players/register', PlayerController.createPlayerHandler);
+playerRouter.get('/players/all', PlayerController.getAllPlayersHandler); // get all players data
+playerRouter.get('/players/onlinePlayers', PlayerController.getOnlinePlayersHandler);
 
 // Chaining routes with similar endpoints.
 // The first route will be used for the GET method, the second for

@@ -32,10 +32,10 @@ class AuthController {
         const token = AuthModel.generateToken(player);
 
         // Include additional player details in the response
-        const playerDetails = { playerId: player.id, playerName: player.playerName, email: player.email };
+        // const playerDetails = { playerId: player.id, name: player.name, email: player.email };
 
         // Attach token and player details to response
-        res.json({ success: true, token, player: playerDetails });
+        res.json({ success: true, token, player});
       } catch (error) {
         console.error('Error during login:', error);
         res.status(500).json({ error: 'Internal Server Error' });
