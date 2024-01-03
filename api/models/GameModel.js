@@ -98,73 +98,73 @@ class GameModel {
       for (let col = 0; col < 3; col++) {
         // Vertical Column Defends Move
         if (player.gameBoard[0][col] === player.playerSymbol && player.gameBoard[1][col] === player.playerSymbol) {
-          player.gameBoard[2][col] = player.playerSymbol;
+          player.gameBoard[2][col] = player.opponentSymbol;
           return player;
         } else if (player.gameBoard[0][col] === player.playerSymbol && player.gameBoard[2][col] === player.playerSymbol) {
-          player.gameBoard[1][col] = player.playerSymbol;
+          player.gameBoard[1][col] = player.opponentSymbol;
           return player;
-        } else if (player.gameBoard[1][col] === player.playerSymbol && player.gameBoard[2][col] === player.opponentSymbol) {
-          player.gameBoard[0][col] = player.playerSymbol;
+        } else if (player.gameBoard[1][col] === player.playerSymbol && player.gameBoard[2][col] === player.playerSymbol) {
+          player.gameBoard[0][col] = player.opponentSymbol;
           return player;
         }
         // Vertical Column Offends Move Check
-        if (player.gameBoard[0][col] === '' && player.gameBoard[1][col] === player.playerSymbol && player.gameBoard[2][col] === player.playerSymbol) {
-          player.gameBoard[0][col] = player.playerSymbol;
+        if (player.gameBoard[0][col] === '' && player.gameBoard[1][col] === player.opponentSymbol && player.gameBoard[2][col] === player.opponentSymbol) {
+          player.gameBoard[0][col] = player.opponentSymbol;
           return player;
-        } else if (player.gameBoard[0][col] === player.playerSymbol && player.gameBoard[2][col] === '' && player.gameBoard[1][col] === player.playerSymbol) {
-          player.gameBoard[2][col] = player.playerSymbol;
+        } else if (player.gameBoard[0][col] === player.opponentSymbol && player.gameBoard[2][col] === '' && player.gameBoard[1][col] === player.opponentSymbol) {
+          player.gameBoard[2][col] = player.opponentSymbol;
           return player;
-        } else if (player.gameBoard[1][col] === player.playerSymbol && player.gameBoard[2][col] === player.playerSymbol && player.gameBoard[0][col] === '') {
-          player.gameBoard[0][col] = player.playerSymbol;
+        } else if (player.gameBoard[1][col] === player.opponentSymbol && player.gameBoard[2][col] === player.opponentSymbol && player.gameBoard[0][col] === '') {
+          player.gameBoard[0][col] = player.opponentSymbol;
           return player;
         }
       }
 
       // Diagonal Moves From Left To Right Check (Left Diagonal)
       // Left Diagonal Defends Move
-      if (player.gameBoard[0][0] === player.opponentSymbol && player.gameBoard[1][1] === player.opponentSymbol) {
-        player.gameBoard[2][2] = player.playerSymbol;
+      if (player.gameBoard[0][0] === player.playerSymbol && player.gameBoard[1][1] === player.playerSymbol) {
+        player.gameBoard[2][2] = player.opponentSymbol;
         return player;
-      } else if (player.gameBoard[0][0] === player.opponentSymbol && player.gameBoard[2][2] === player.opponentSymbol) {
-        player.gameBoard[1][1] = player.playerSymbol;
+      } else if (player.gameBoard[0][0] === player.playerSymbol && player.gameBoard[2][2] === player.playerSymbol) {
+        player.gameBoard[1][1] = player.opponentSymbol;
         return player;
-      } else if (player.gameBoard[1][1] === player.opponentSymbol && player.gameBoard[2][2] === player.opponentSymbol) {
-        player.gameBoard[0][0] = player.playerSymbol;
+      } else if (player.gameBoard[1][1] === player.playerSymbol && player.gameBoard[2][2] === player.playerSymbol) {
+        player.gameBoard[0][0] = player.opponentSymbol;
         return player;
       }
       // Left Diagonal Offends Move Check
-      if (player.gameBoard[0][0] === '' && player.gameBoard[1][1] === player.playerSymbol && player.gameBoard[2][2] === player.playerSymbol) {
-        player.gameBoard[0][0] = player.playerSymbol;
+      if (player.gameBoard[0][0] === '' && player.gameBoard[1][1] === player.opponentSymbol && player.gameBoard[2][2] === player.opponentSymbol) {
+        player.gameBoard[0][0] = player.opponentSymbol;
         return player;
-      } else if (player.gameBoard[0][0] === player.playerSymbol && player.gameBoard[2][2] === '' && player.gameBoard[1][1] === player.playerSymbol) {
-        player.gameBoard[2][2] = player.playerSymbol;
+      } else if (player.gameBoard[0][0] === player.opponentSymbol && player.gameBoard[2][2] === '' && player.gameBoard[1][1] === player.opponentSymbol) {
+        player.gameBoard[2][2] = player.opponentSymbol;
         return player;
-      } else if (player.gameBoard[1][1] === player.playerSymbol && player.gameBoard[2][2] === player.playerSymbol && player.gameBoard[0][0] === '') {
-        player.gameBoard[0][0] = player.playerSymbol;
+      } else if (player.gameBoard[1][1] === player.opponentSymbol && player.gameBoard[2][2] === player.opponentSymbol && player.gameBoard[0][0] === '') {
+        player.gameBoard[0][0] = player.opponentSymbol;
         return player;
       }
 
       // Diagonal Moves From Right To Left Check (Right Diagonal)
       // Right Diagonal Defends Move
-      if (player.gameBoard[0][2] === player.opponentSymbol && player.gameBoard[1][1] === player.opponentSymbol) {
-        player.gameBoard[2][0] = player.playerSymbol;
+      if (player.gameBoard[0][2] === player.playerSymbol && player.gameBoard[1][1] === player.playerSymbol) {
+        player.gameBoard[2][0] = player.opponentSymbol;
         return player;
-      } else if (player.gameBoard[0][2] === player.opponentSymbol && player.gameBoard[2][0] === player.opponentSymbol) {
-        player.gameBoard[1][1] = player.playerSymbol;
+      } else if (player.gameBoard[0][2] === player.playerSymbol && player.gameBoard[2][0] === player.playerSymbol) {
+        player.gameBoard[1][1] = player.opponentSymbol;
         return player;
-      } else if (player.gameBoard[1][1] === player.opponentSymbol && player.gameBoard[2][0] === player.opponentSymbol) {
-        player.gameBoard[0][2] = player.playerSymbol;
+      } else if (player.gameBoard[1][1] === player.playerSymbol && player.gameBoard[2][0] === player.playerSymbol) {
+        player.gameBoard[0][2] = player.opponentSymbol;
         return player;
       }
       // Right Diagonal Offends Move Check
-      if (player.gameBoard[0][2] === '' && player.gameBoard[1][1] === player.playerSymbol && player.gameBoard[2][0] === player.playerSymbol) {
-        player.gameBoard[0][2] = player.playerSymbol;
+      if (player.gameBoard[0][2] === '' && player.gameBoard[1][1] === player.opponentSymbol && player.gameBoard[2][0] === player.opponentSymbol) {
+        player.gameBoard[0][2] = player.opponentSymbol;
         return player;
-      } else if (player.gameBoard[0][2] === player.playerSymbol && player.gameBoard[2][0] === '' && player.gameBoard[1][1] === player.playerSymbol) {
-        player.gameBoard[2][0] = player.playerSymbol;
+      } else if (player.gameBoard[0][2] === player.opponentSymbol && player.gameBoard[2][0] === '' && player.gameBoard[1][1] === player.opponentSymbol) {
+        player.gameBoard[2][0] = player.opponentSymbol;
         return player;
-      } else if (player.gameBoard[1][1] === player.playerSymbol && player.gameBoard[2][0] === '' && player.gameBoard[0][2] === player.playerSymbol) {
-        player.gameBoard[2][0] = player.playerSymbol;
+      } else if (player.gameBoard[1][1] === player.opponentSymbol && player.gameBoard[2][0] === '' && player.gameBoard[0][2] === player.opponentSymbol) {
+        player.gameBoard[2][0] = player.opponentSymbol;
         return player;
       }
 
