@@ -12,6 +12,7 @@ The goal of this project is to bring the Kwasiada Frankaa game into the digital 
 
 ### index
 **GET /api/**
+### index
 **GET /api/game/gameBoard**
 
 ### Auth
