@@ -30,7 +30,7 @@ const startServer = async () => {
     // Connect to Redis
     await redisModel.openConnection();
     console.log('After Redis connection');
-    
+
     if (redisModel.isAlive()) {
       console.log('Redis is alive');
     } else {
@@ -86,12 +86,16 @@ io.on('connection', (socket) => {
   const gameModel = new GameModel(io);
 
   // Associate socket ID with player
-  socket.on('setSocketId', (playerId) => {
+  socket.on('setSocketId', (data) => {
+    console.log('setSocketId event: ', data);
+    const playerId = data.playerId
     // Find player by ID and set their socketId
     PlayerModel.Model.findById(playerId)
       .then((player) => {
         if (player) {
           player.socketId = socket.id;
+          player.save(); // Save the updated player information
+          console.log('Player: ', player)
           console.log(`Player ${playerId} connected with socket ID: ${socket.id}`);
         } else {
           console.error(`Player not found for ID: ${playerId}`);
@@ -101,6 +105,44 @@ io.on('connection', (socket) => {
         console.error('Error setting socket ID:', error);
       });
   });
+
+  // Emitting 'inviteOpponent' event
+  socket.on('inviteOpponent', (data) => {
+    console.log('data: ', data)
+    const opponentId = data.opponentId;
+    console.log(`Opponent Invitation to id: ${opponentId}`)
+    PlayerModel.Model.findById(opponentId).then((opponent) => {
+      if (opponent) {
+        console.log('Opponent: ', opponent)
+        // Emit the invitation to the specified opponent
+        io.to(opponent.socketId).emit('invitation', {
+          senderId: socket.id,
+        });
+      } else {
+        console.error(`Player not found for ID: ${playerId}`);
+      }
+    })
+      .catch((error) => {
+        console.error('Error setting socket ID:', error);
+      });
+  });
+
+// Handle 'eventAccepted' event
+socket.on('eventAccepted', (data) => {
+  const recipientId = socket.id;
+  const senderId = data.senderId;
+
+  // Create a unique room name based on sender and recipient IDs
+  const gameRoom = `game_room_${senderId}_${recipientId}`;
+
+  // Join both the sender and recipient to the unique game room
+  socket.join(gameRoom);
+  socket.join(gameRoom);
+  io.to(senderId).to(recipientId).emit('joinedGameRoom', { gameRoom: gameRoom });
+
+  console.log(`Players ${senderId} and ${recipientId} joined ${gameRoom}`);
+});
+
 
   // Handle single player move
   socket.on('singlePlayerMove', (data) => {
@@ -116,22 +158,13 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Emitting 'inviteOpponent' event
-  socket.on('inviteOpponent', (data) => {
-    const { opponentId } = data.opponentId;
-
-    // Emit the invitation to the specified opponent
-    io.to(opponentId).emit('invitation', {
-      senderId: socket.id,
-    });
-  });
 
   // Handle new chat messages
   socket.on('message', (data) => {
     try {
       console.log('data:', data);
-      const { player, message } = data;
-      chatModel.sendMessage(player, message);
+      //const { player, message } = data;
+      //chatModel.sendMessage(player, message);
     } catch (error) {
       console.error('Error processing message:', error);
       socket.emit('error', { message: 'An error occurred while processing the message.' });
@@ -144,11 +177,11 @@ io.on('connection', (socket) => {
     socket.emit('chatHistory', chatHistory);
   });
 
-  // Game play sockets
-  // Handle player joining
-  socket.on('joinGame', (player) => {
-    gameModel.joinGameHandler(player, socket.id);
-  });
+  // // Game play sockets
+  // // Handle player joining
+  // socket.on('joinGame', (player) => {
+  //   gameModel.joinGameHandler(player, socket.id);
+  // });
 
   // Handle player moves
   socket.on('makeMove', (data) => {
@@ -163,9 +196,19 @@ io.on('connection', (socket) => {
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
-    //gameModel.removePlayer(socket.id);
-    //const gameState = gameModel.getGameState();
-    //io.emit('gameState', gameState);
+  
+    // Find player by socket ID and update socketId to null
+    PlayerModel.Model.findOneAndUpdate({ socketId: socket.id }, { $set: { socketId: null } }, { new: true })
+      .then((player) => {
+        if (player) {
+          console.log(`Player ${player._id} disconnected`);
+        } else {
+          console.error(`Player not found for socket ID: ${socket.id}`);
+        }
+      })
+      .catch((error) => {
+        console.error('Error updating socket ID on disconnect:', error);
+      });
   });
 });
 

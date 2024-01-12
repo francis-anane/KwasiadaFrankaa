@@ -24,6 +24,7 @@ class SplashScreenActivity : AppCompatActivity() {
     // Executes when the activity is created
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("SplashScreenActivity", "onCreate called")
         super.onCreate(savedInstanceState)
 
         // Define the required permissions

@@ -25,6 +25,7 @@ class PlayerSetupActivity : AppCompatActivity() {
     private lateinit var editTextTextEmailAddress: EditText
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("PlayerSetupActivity", "onCreate called")
         setContentView(R.layout.activity_player_setup)
         initViews()
 
