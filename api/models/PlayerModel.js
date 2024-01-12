@@ -23,6 +23,7 @@ class PlayerModel {
     isYourTurn: {type: Boolean, enum: [true, false], required: false},
     hasWon: {type: Boolean, enum: [true, false], required: false},
     moveCount: {type: Number, required: false, default: 0},
+    opponentId: { type: String, required: false },
     socketId: { type: String, required: false },
   });
 

@@ -1,4 +1,3 @@
-// ./app.js
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/extensions */
 import express from 'express';
@@ -25,6 +24,7 @@ const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Function to start the server
 const startServer = async () => {
   try {
     // Connect to Redis
@@ -45,8 +45,8 @@ const startServer = async () => {
   }
 };
 
+// Gracefully close the Redis connection on SIGINT
 process.on('SIGINT', () => {
-  // Close the Redis connection gracefully before exiting
   redisModel.closeConnection();
   process.exit();
 });
@@ -102,20 +102,28 @@ io.on('connection', (socket) => {
       });
   });
 
-  socket.on('singlePlayer', (data) => {
+  // Handle single player move
+  socket.on('singlePlayerMove', (data) => {
     console.log('data', data)
+    const player = gameModel.singlePlayerGame(data);
+    console.log('player', player);
+    const gameWinner = gameModel.setWinner(player);
+    if (gameWinner) {
+      io.emit('gameWinner', gameWinner);
+    }
+    else {
+      io.emit('singlePlayerMove', player);
+    }
+  });
 
-      const player = gameModel.singlePlayerGame(data);
-      console.log('player', player);
-      const gameWinner = gameModel.setWinner(player);
-      if (gameWinner) {
-        io.emit('gameWinner', gameWinner);
-      }
-      else{
-        io.emit('nextMove', player);
-      
-      }
-      
+  // Emitting 'inviteOpponent' event
+  socket.on('inviteOpponent', (data) => {
+    const { opponentId } = data.opponentId;
+
+    // Emit the invitation to the specified opponent
+    io.to(opponentId).emit('invitation', {
+      senderId: socket.id,
+    });
   });
 
   // Handle new chat messages
@@ -155,11 +163,12 @@ io.on('connection', (socket) => {
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
-    gameModel.removePlayer(socket.id);
-    const gameState = gameModel.getGameState();
-    io.emit('gameState', gameState);
+    //gameModel.removePlayer(socket.id);
+    //const gameState = gameModel.getGameState();
+    //io.emit('gameState', gameState);
   });
 });
 
 startServer();
 export default app; // Export the Express app instance
+

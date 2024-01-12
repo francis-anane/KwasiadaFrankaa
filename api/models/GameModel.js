@@ -23,6 +23,7 @@ class GameModel {
         this.gameBoard[i][j] = ''; // Initialize with empty values
       }
     }
+    return this.gameBoard;
   }
 
   setPlayerColor() {
@@ -219,8 +220,8 @@ setWinner(player) {
     }
 
     // Check for diagonal wins
-    const leftDiagonal = this.gameBoard[0][0] + this.gameBoard[1][1] + this.gameBoard[2][2];
-    const rightDiagonal = this.gameBoard[0][2] + this.gameBoard[1][1] + this.gameBoard[2][0];
+    const leftDiagonal = player.gameBoard[0][0] + player.gameBoard[1][1] + player.gameBoard[2][2];
+    const rightDiagonal = player.gameBoard[0][2] + player.gameBoard[1][1] + player.gameBoard[2][0];
 
     if (leftDiagonal === player.playerSymbol || rightDiagonal === player.playerSymbol) {
       player.hasWon = true;
@@ -240,115 +241,20 @@ setWinner(player) {
   }
 }
 
-    // Multiplayer game play logic
-    multiplayerGame(player){
-
+  // Multiplayer game play logic
+  multiplayerGame(srcRow, srcCol, destRow, destCol, player){
+    if(player.gameBoard[destRow][destCol] === ''){
+    player.isYourTurn = !player.isYourTurn;
+    player.gameBoard[destRow][destCol] = player.playerSymbol;
+    player.moveCount += 1;
+    player.gameBoard[srcRow][srcCol] = '';
     }
-
-
-
-
-
-  // Switch the turn to the next player
-  switchTurn() {
-    this.currentPlayerIndex = 1 - this.currentPlayerIndex;
   }
-
-  // Move an object from source to destination on the game board
-  moveObject(srcRow, srcCol, destRow, destCol) {
-    this.gameBoard[destRow][destCol] = this.gameBoard[srcRow][srcCol];
-    this.gameBoard[srcRow][srcCol] = '';
-  }
-
-  // Get the current player
-  getCurrentPlayer() {
-    return this.players[this.currentPlayerIndex];
-  }
-
   // Remove a player based on socket ID
   removePlayer(playerId) {
     this.players = this.players.filter((player) => player.socketId !== playerId);
   }
-
-
-
-  // Get the current state of the game
-  getGameState() {
-    return { gameBoard: this.gameBoard, players: this.players };
-  }
-
-  // // Handle player joining the game
-  // joinGameHandler(playerData, socketId) {
-  //   let playerId;
-
-  //   // Find the player by ID and set their socketId
-  //   PlayerModel.Model.findById(playerId)
-  //     .then((player) => {
-  //       if (player) {
-  //         player.socketId = socketId;
-  //       }
-
-  //       return this.addPlayer(playerData, socketId);
-  //     })
-  //     .then((success) => {
-  //       if (success) {
-  //         this.io.emit('gameState', this.getGameState());
-  //       } else {
-  //         this.io.to(socketId).emit('error', 'Game is full');
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error adding player to the game:', error.message);
-  //       this.io.to(socketId).emit('error', 'Internal Server Error');
-  //     });
-  // }
-
-  // Check if a position is valid on the game board
-  isValidPosition(row, col) {
-    return row >= 0 && row < 3 && col >= 0 && col < 3;
-  }
-
-
-  // Handle player making a move
-  makeMoveHandler(srcRow, srcCol, destRow, destCol, socketId) {
-    try {
-      const currentPlayer = this.players.find((player) => player.socketId === socketId);
-
-      if (!currentPlayer) {
-        console.error('Player not found:', socketId);
-        this.io.to(socketId).emit('error', 'Player not found');
-        return;
-      }
-
-      // Check if the move is valid
-      if (
-        this.isValidPosition(srcRow, srcCol) &&
-        this.isValidPosition(destRow, destCol) &&
-        this.players.length === 2 &&
-        currentPlayer === this.getCurrentPlayer()
-      ) {
-        // Make the move
-        this.moveObject(srcRow, srcCol, destRow, destCol);
-        this.switchTurn();
-
-        // Check for a winner
-        const winner = this.checkWinner();
-
-        // Update game state
-        this.io.emit('gameState', this.getGameState());
-
-        // Handle game over
-        if (winner) {
-          this.io.emit('gameOver', { winner });
-        }
-      } else {
-        this.io.to(socketId).emit('error', 'Invalid move or insufficient players');
-      }
-    } catch (error) {
-      console.error('Error processing move:', error.message);
-      this.io.to(socketId).emit('error', 'Internal Server Error');
-    }
-  }
+  
 }
 
 export default GameModel;

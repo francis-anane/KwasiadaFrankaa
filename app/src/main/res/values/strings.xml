@@ -4,4 +4,10 @@
     <string name="Settings">Settings</string>
     <string name="About">About</string>
     <string name="Rules">Game Rules</string>
+    <string name="SetupPlayer">Create a Player ID</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="prompt_email">Your Email</string>
+    <string name="prompt_password">Your Password</string>
+    <string name="action_sign_in_short">Sign In</string>
+    <string name="action_sign_in">Sign In</string>
 </resources>

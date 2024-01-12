@@ -22,8 +22,17 @@
         <item name="android:layout_marginEnd">2dp</item>
         <item name="android:layout_marginTop">2dp</item>
         <item name="android:layout_marginBottom">2dp</item>
-        <item name="android:background">@drawable/button_background</item>
+        <item name="android:background">@drawable/game_board_cells_button_background</item>
         <item name="android:padding">0dp</item>
+    </style>
+
+    <!-- Splash screen style-->
+    <style name="SplashTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="colorPrimary">@color/design_default_color_on_primary</item>
+        <item name="colorPrimaryDark">@color/org_blue</item>
+        <item name="colorAccent">@color/white</item>
+        <item name="android:statusBarColor">@color/white</item>
     </style>
 
 
