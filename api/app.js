@@ -87,23 +87,26 @@ io.on('connection', (socket) => {
 
   // Associate socket ID with player
   socket.on('setSocketId', (data) => {
-    console.log('setSocketId event: ', data);
-    const playerId = data.playerId
-    // Find player by ID and set their socketId
-    PlayerModel.Model.findById(playerId)
-      .then((player) => {
-        if (player) {
-          player.socketId = socket.id;
-          player.save(); // Save the updated player information
-          console.log('Player: ', player)
-          console.log(`Player ${playerId} connected with socket ID: ${socket.id}`);
-        } else {
-          console.error(`Player not found for ID: ${playerId}`);
-        }
-      })
-      .catch((error) => {
-        console.error('Error setting socket ID:', error);
-      });
+    if(data){
+      console.log('setSocketId event: ', data);
+      const playerId = data.playerId
+      // Find player by ID and set their socketId
+      PlayerModel.Model.findById(playerId)
+        .then((player) => {
+          if (player) {
+            player.socketId = socket.id;
+            player.save(); // Save the updated player information
+            console.log('Player: ', player)
+            console.log(`Player ${playerId} connected with socket ID: ${socket.id}`);
+          } else {
+            console.error(`Player not found for ID: ${playerId}`);
+          }
+        })
+        .catch((error) => {
+          console.error('Error setting socket ID:', error);
+        });
+    
+    }
   });
 
   // Emitting 'inviteOpponent' event
@@ -163,6 +166,9 @@ socket.on('eventAccepted', (data) => {
   socket.on('message', (data) => {
     try {
       console.log('data:', data);
+      // Broadcast the message to the common room
+    const {content, gameRoom } = data 
+    io.to(gameRoom).emit('message', { senderId: socket.id, message: content });
       //const { player, message } = data;
       //chatModel.sendMessage(player, message);
     } catch (error) {
