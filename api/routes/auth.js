@@ -5,7 +5,7 @@ import AuthController from '../controllers/AuthController.js';
 
 const authRouter = express.Router();
 
-authRouter.get('/auth/login', AuthController.loginHandler);
+authRouter.post('/auth/login', AuthController.loginHandler);
 //  Player authentication routes
 
 // Route for user logout

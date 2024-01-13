@@ -3,6 +3,7 @@ package com.abstratsystems.kwasiadafrankaa
 import Player
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abstratsystems.kwasiadafrankaa.utils.InitGameBoardData
 import com.abstratsystems.kwasiadafrankaa.utils.AbstratRecyclerViewAdapter
 import com.abstratsystems.kwasiadafrankaa.utils.Instances.player
+import com.abstratsystems.kwasiadafrankaa.utils.WebSocketClient
 
 class GameActivity : Activity() {
 
@@ -47,8 +49,11 @@ class GameActivity : Activity() {
     // Called when the activity is created
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("GameActivity", "onCreate called")
         setContentView(R.layout.activity_game)
         initViews()
+
+        WebSocketClient.startWebSocket()
 
         // Initialize the adapter with an empty list
         adapter = AbstratRecyclerViewAdapter(
@@ -113,6 +118,13 @@ class GameActivity : Activity() {
                 sendMessageButton.visibility = View.GONE
             }
         }
+
+        // Set an event listener to handle incoming custom events
+        WebSocketClient.setEventListener(object : WebSocketClient.WebSocketEventListener {
+            override fun onCustomEvent(event: String) {
+             // update
+            }
+        })
     }
 
     // Method to handle button clicks on the game board
@@ -122,6 +134,7 @@ class GameActivity : Activity() {
             desCol = col
             player.gameBoard[desRow!!][desCol!!] = player.playerSymbol.toString()
             secondClick = true
+
         } else if (!secondClick && player.moveCount > 0) {
             srcRow = row
             srcCol = col
@@ -133,6 +146,8 @@ class GameActivity : Activity() {
             player.gameBoard[desRow!!][desCol!!] = player.playerSymbol.toString()
             secondClick = false
         }
+        // Send a custom event when the button is clicked
+        WebSocketClient.sendCustomEvent("Hello, Server!")
         // Print the selected row and column for debugging
         println("desRow: $desRow")
         println("desCol: $desCol")
@@ -156,5 +171,10 @@ class GameActivity : Activity() {
         sendMessageButton = findViewById(R.id.sendMessageButton)
         messageEditText = findViewById(R.id.messageEditText)
         multiAndSinglePlayerToggleButton = findViewById(R.id.singleAndMultiplayerToggleButton)
+    }
+    // called when activity is destroyed
+    override fun onDestroy() {
+        super.onDestroy()
+        WebSocketClient.stopWebSocket()
     }
 }

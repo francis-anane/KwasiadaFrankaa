@@ -101,7 +101,7 @@ document.getElementById('loginButton').addEventListener('click', async () => {
   try {
     const loginResult = await login();
     // If login was successful, redirect to the game page
-    window.location.href = 'http://localhost:3000/api/gameBoard';
+    window.location.href = 'http://localhost:3000/api/game/gameBoard';
   } catch (error) {
     // Handle login error (e.g., display an error message)
     console.error('Login failed:', error.message);

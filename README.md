@@ -1,6 +1,6 @@
 # Kwasiada Frankaa
 
-Welcome to the Kwasiada Frankaa, This web-based application allows users to play Kwasiada Frankaa, a strategic 3x3 board game, against each other in real-time. Kwasiada Frankaa is a game that is notable among the people of Ghana.
+Welcome to Kwasiada Frankaa! This web-based application allows users to play Kwasiada Frankaa, a strategic 3x3 board game, against each other in real-time. Kwasiada Frankaa is a game that is notable among the people of Ghana.
 
 ## Project Overview
 
@@ -10,14 +10,13 @@ The goal of this project is to bring the Kwasiada Frankaa game into the digital 
 
 ### API Endpoints
 
-### index
-**GET /api/**
-**GET /api/game/gameBoard**
+#### Index
+- **GET /api/**
+- **GET /api/game/gameBoard**
 
-### Auth
-**GET /api/auth/login**
-### Auth
-**GET /api/auth/logout**
+#### Auth
+- **GET /api/auth/login**
+- **GET /api/auth/logout**
 
 #### Players
 
@@ -25,21 +24,12 @@ The goal of this project is to bring the Kwasiada Frankaa game into the digital 
   - Retrieve a list of online players.
 - **GET /api/players/{player_id}**
   - Retrieve a player.
-
 - **POST /api/players/register**
   - Create a new player.
-
 - **PUT /api/players/{player_id}**
   - Update player information.
-
 - **DELETE /api/players/{player_id}**
   - Delete a player.
-
-
-
-
-
-
 
 ### Socket Events
 
@@ -52,11 +42,20 @@ The goal of this project is to bring the Kwasiada Frankaa game into the digital 
 - **inviteOpponent**
   - Sends an invitation to another player to join a game.
 
+- **eventAccepted**
+  - Handles the acceptance of an invitation, creating a common room for the players.
+
+- **eventRejected**
+  - Notifies the sender when an invitation is rejected.
+
 - **message**
-  - Sends and receives chat messages.
+  - Sends and receives chat messages within the game room.
 
 - **getChatHistory**
-  - Retrieves chat history.
+  - Retrieves chat history within the game room.
+
+- **joinedGameRoom**
+  - Informs players when they have successfully joined a common game room.
 
 - **joinGame**
   - Handles a player joining a multiplayer game.
@@ -87,4 +86,3 @@ The goal of this project is to bring the Kwasiada Frankaa game into the digital 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
