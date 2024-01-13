@@ -22,7 +22,7 @@ function sendFileSafe(res, fileName) {
 // Define a route for the root URL
 indexRouter.get('/', (req, res) => {
   // Render the index.html file from the public directory
-  sendFileSafe(res, 'index.html');
+  sendFileSafe(res, 'signup.html');
 });
 
 // Define a route for the /gameBoard URL
