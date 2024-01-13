@@ -1,5 +1,6 @@
 // ./models/AuthModel.js
 
+// Import necessary modules
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import jwt from 'jsonwebtoken';
@@ -11,12 +12,14 @@ class AuthModel {
   static initialize() {
     // Serialize player to store in session
     passport.serializeUser((user, done) => {
+      // Store user id in the session
       done(null, user.id);
     });
 
     // Deserialize player from session
     passport.deserializeUser(async (id, done) => {
       try {
+        // Retrieve player by id from the database
         const player = await PlayerModel.Model.findById(id);
         done(null, player);
       } catch (err) {
@@ -50,14 +53,17 @@ class AuthModel {
 
   // Generate JWT token for authenticated user
   static generateToken(user) {
+    // Get JWT secret key from environment variables
     const secretKey = process.env.JWT_SECRET_KEY;
+
+    // Define token payload and options
     const payload = { userId: user.id, email: user.email };
     const options = { expiresIn: '1h' };
 
+    // Sign and return the JWT token
     return jwt.sign(payload, secretKey, options);
   }
-
-
 }
 
+// Export the AuthModel class
 export default AuthModel;

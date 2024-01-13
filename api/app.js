@@ -80,7 +80,7 @@ app.use('/api', playerRouter);
 
 // Listen on socket connections
 io.on('connection', (socket) => {
-  console.log(`New client connected: ${socket.id}`);
+  console.log(`Player connected: ${socket.id}`);
 
   const chatModel = new ChatModel(io);
   const gameModel = new GameModel(io);
@@ -167,7 +167,8 @@ socket.on('eventAccepted', (data) => {
     try {
       console.log('data:', data);
       // Broadcast the message to the common room
-    const {content, gameRoom } = data 
+    const {content, gameRoom } = data
+    //TODO: I will use the sender name later to identify a message sender
     io.to(gameRoom).emit('message', { senderId: socket.id, message: content });
       //const { player, message } = data;
       //chatModel.sendMessage(player, message);

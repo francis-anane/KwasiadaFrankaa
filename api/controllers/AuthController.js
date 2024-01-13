@@ -25,7 +25,7 @@ class AuthController {
           return res.status(401).json({ error: info.message });
         }
 
-        // Store player in-memory (consider using a centralized session store for scalability)
+        // Store player in-memory (Will use redis for this later)
         AuthController.loggedInPlayers.push(player);
 
         // Generate JWT token
