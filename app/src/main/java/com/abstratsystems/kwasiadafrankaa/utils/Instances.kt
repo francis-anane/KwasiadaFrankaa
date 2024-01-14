@@ -10,7 +10,7 @@ object Instances {
 
     // The Retrofit Network library instance
     private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl("http://192.168.110.1:3000/api/")
+        .baseUrl("http://192.168.180.1:3000/api/")
         // Add a Gson converter factory to parse JSON responses
         .addConverterFactory(GsonConverterFactory.create())
         .build()

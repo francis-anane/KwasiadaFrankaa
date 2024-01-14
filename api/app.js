@@ -224,4 +224,3 @@ socket.on('eventAccepted', (data) => {
 
 startServer();
 export default app; // Export the Express app instance
-
