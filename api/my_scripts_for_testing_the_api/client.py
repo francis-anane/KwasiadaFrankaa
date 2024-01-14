@@ -24,7 +24,8 @@ def disconnect():
 
 @sio.event
 def message(data):
-    print("\nReceived message from {}: {}".format(data['senderId'], data['message']))
+    if data.get('sender').get('socketId') != player.get('socketId'):
+        print("\nReceived message from {}: {}".format(data['sender']['name'], data['message']))
 
     
     
@@ -86,9 +87,6 @@ def invitation(data):
     print('\nInvitation from ' + senderId + '\n')
     reception = input('Accept invitation? (y/n): ')
     if reception == 'y':
-        # Emit 'eventAccepted' event to the server
-        #sio.emit('eventAccepted', {'senderSocketId': senderSocketId, 'receiverSocketId': sio.sid})
-        # sio.emit('eventAccepted', {'senderId': senderId,})
         sio.emit('eventAccepted', {'senderId': senderId, 'gamePlayersRoom': gamePlayersRoom})
         print('Invitation accepted')
 
@@ -138,7 +136,7 @@ if __name__ == "__main__":
                     break
                 elif event == 'message':
                     message_content = input("Enter a message: ")
-                    sio.emit('message', {"content": message_content, "gamePlayersRoom": gamePlayersRoom})
+                    sio.emit('message', {"content": message_content, "sender": player, "gamePlayersRoom": gamePlayersRoom})
                 elif event == 'inviteOpponent':
                     opponentId = input("Enter the opponent ID: ")
                     sio.emit('inviteOpponent', {"opponentId": opponentId, "inviteSenderSocketId": sio.sid})
