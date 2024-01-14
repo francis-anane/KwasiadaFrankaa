@@ -111,15 +111,20 @@ io.on('connection', (socket) => {
 
   // Emitting 'inviteOpponent' event
   socket.on('inviteOpponent', (data) => {
+
     console.log('data: ', data)
     const opponentId = data.opponentId;
     console.log(`Opponent Invitation to id: ${opponentId}`)
     PlayerModel.Model.findById(opponentId).then((opponent) => {
       if (opponent) {
         console.log('Opponent: ', opponent)
+        // Create a unique room name based on invite sender and recipient socket IDs
+        const gameRoom = `game_room_${socket.id}_${opponentId}`;
+        // Add the invite sender to the room
+        socket.join(gameRoom)
         // Emit the invitation to the specified opponent
         io.to(opponent.socketId).emit('invitation', {
-          senderId: socket.id,
+          senderId: socket.id, 'gameRoom': gameRoom,
         });
       } else {
         console.error(`Player not found for ID: ${playerId}`);
@@ -136,12 +141,10 @@ socket.on('eventAccepted', (data) => {
   const senderId = data.senderId;
 
   // Create a unique room name based on sender and recipient IDs
-  const gameRoom = `game_room_${senderId}_${recipientId}`;
-
+  const gameRoom = data.gameRoom;
   // Join both the sender and recipient to the unique game room
   socket.join(gameRoom);
-  socket.join(gameRoom);
-  io.to(senderId).to(recipientId).emit('joinedGameRoom', { gameRoom: gameRoom });
+  io.to(gameRoom).emit('joinedGameRoom', { gameRoom: gameRoom });
 
   console.log(`Players ${senderId} and ${recipientId} joined ${gameRoom}`);
 });
