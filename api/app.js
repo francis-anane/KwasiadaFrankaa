@@ -139,17 +139,18 @@ io.on('connection', (socket) => {
 
     // Create an object representing game players, based on invite sender and recipient socket IDs
     // const gamePlayers = {senderSocketId: senderSocketId, receiverSocketId: receiverSocketId};
-    const gamePlayers = `${senderSocketId}_${receiverSocketId};`
+    const gameRoomOfPlayers = `${senderSocketId}_${receiverSocketId};`
     console.log('socket of receiver: ', socket.id)
     console.log('socket of sender: ', senderSocketId)
     console.log('socket of receiver from client side: ', receiverSocketId)
 
     // Join both the sender and recipient to the unique game room
-    socket.join(gamePlayers);
+    socket.join(gameRoomOfPlayers);
     // socket.join(gamePlayers);
     // Emit an event representing a two players matched in a game
     // io.to(senderSocketId).to(receiverSocketId).emit('matchedInGame', gamePlayers);
-    io.to(gamePlayers).emit('matchedInGame', {'receiverSocketId': receiverSocketId, 'senderSocketId': senderSocketId});
+    io.to(gameRoomOfPlayers).emit('matchedInGame', {'receiverSocketId': receiverSocketId, 'senderSocketId': senderSocketId,
+    'gameRoomOfPlayers': gameRoomOfPlayers});
     console.log(`Players ${senderSocketId} and ${receiverSocketId} are matched in a game`);
   });
 
