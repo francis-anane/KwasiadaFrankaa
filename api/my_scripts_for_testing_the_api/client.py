@@ -10,7 +10,7 @@ gamePlayersRoom = None
 
 @sio.event
 def connect():
-    print("Connected to server")
+    print("Connected to server\n")
 
 @sio.event
 def modifiedPlayer(data):
@@ -20,12 +20,12 @@ def modifiedPlayer(data):
 
 @sio.event
 def disconnect():
-    print("Disconnected from server")
+    print("Disconnected from server\n")
 
 @sio.event
 def message(data):
     if data.get('sender').get('socketId') != player.get('socketId'):
-        print("\nReceived message from {}: {}".format(data['sender']['name'], data['message']))
+        print("\nReceived message from {}: {}\n\r".format(data['sender']['name'], data['message']))
 
     
     
@@ -46,7 +46,12 @@ def multiplayerMove(data):
     print()
 
 @sio.event
+def moveMade(data):
+    print(data)
+
+@sio.event
 def singlePlayerMove(data):
+
     if data.get("isYourTurn"):
         if data["moveCount"] == 0:
             desRow = int(input("Enter destination row: "))
@@ -82,25 +87,26 @@ def invitation(data):
     #senderSocketId = data.get('senderId')
     senderId = data.get('senderId')
     global gamePlayersRoom
+
     gamePlayersRoom = data.get('gamePlayersRoom')
 
     print('\nInvitation from ' + senderId + '\n')
     reception = input('Accept invitation? (y/n): ')
     if reception == 'y':
         sio.emit('eventAccepted', {'senderId': senderId, 'gamePlayersRoom': gamePlayersRoom})
-        print('Invitation accepted')
+        print('Invitation accepted\n')
 
     else:
         # Emit 'eventRejected' event to the server
         sio.emit('eventRejected', {'senderSocketId': senderId})
-        print('Invitation rejected')
+        print('Invitation rejected\n')
 
 @sio.event
 def joinedGameRoom(data):
     global gamePlayersRoom
     gamePlayersRoom = data.get('gamePlayersRoom')
-    print('gamePlayersRoom:', gamePlayersRoom)
-    print('You are matched in a multiplayer game')
+    print('\ngamePlayersRoom:', gamePlayersRoom)
+    print('\nYou are matched in a multiplayer game\n')
 
 
 
@@ -116,9 +122,7 @@ if __name__ == "__main__":
         password = getpass()
         payload = {'email': email, 'password': password}
         result = requests.post(url, json=payload)
-        # print(result.text)
-        player = json.loads(result.text).get('player')
-        print(player)        
+        player = json.loads(result.text).get('player')      
     	
         if(result):
             sio.connect('http://127.0.0.1:3000/api')  # Connect to the root URL of the server
@@ -127,21 +131,33 @@ if __name__ == "__main__":
             onlinePlayers = json.loads(requests.get("http://127.0.0.1:3000/api/players/onlinePlayers").text)
             print('Online Players:')
             for p in onlinePlayers:
-                print("Player Name: {0}\nPlayer ID: {1}".format(p["name"], p["_id"]))
+                print("Player Name: {0}\nPlayer ID: {1}\n".format(p["name"], p["_id"]))
                 #print("Player", p)
             while True:
+                print("Events:\n1. inviteOpponent\n2. message\n3. makeMove")
                 event = input("Enter an event name  (or 'exit' to quit): ")
-            
+                print("\n")
                 if event == 'exit':
                     break
+                elif event == 'inviteOpponent':
+                    opponentEmail = input("Enter the opponent's email: ")
+                    sio.emit('inviteOpponent', {"opponentEmail": opponentEmail, "inviteSenderSocketId": sio.sid})
+                    print("\n")
                 elif event == 'message':
                     message_content = input("Enter a message: ")
                     sio.emit('message', {"content": message_content, "sender": player, "gamePlayersRoom": gamePlayersRoom})
-                elif event == 'inviteOpponent':
-                    opponentId = input("Enter the opponent ID: ")
-                    sio.emit('inviteOpponent', {"opponentId": opponentId, "inviteSenderSocketId": sio.sid})
-                #sio.emit('makeMove', {'srcRow': 0, 'srcCol': 0, 'desRow': 2, 'desCol': 2})
-                #sio.emit("singlePlayerMove", player)
+                    print("\n")
+                elif event == 'makeMove':
+                    srcRow = int(input("Enter source row: "))
+                    srcCol = int(input("Enter source column: "))
+                    desRow = int(input("Enter destination row: "))
+                    desCol = int(input("Enter destination column: "))
+                    sio.emit('makeMove', {"move":{"srcRow": srcRow, "srcCol": srcCol, "desRow": desRow, "desCol": desCol},
+                                          "gameBoard": player.get("gameBoard"), "gamePlayersRoom": gamePlayersRoom})
+                    print("\n")
+                else:
+                    if event != "" or event != " " or event != "\r":
+                        print("Invalid Event\n")
 
     except Exception as e:
         print("Client error:", e)

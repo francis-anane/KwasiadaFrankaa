@@ -17,6 +17,7 @@ import GameModel from './models/GameModel.js';
 import AuthModel from './models/AuthModel.js';
 import redisModel from './utils/redis.js';
 import PlayerModel from './models/PlayerModel.js';
+import AuthController from './controllers/AuthController.js'
 import './utils/db.js';
 
 const app = express();
@@ -116,13 +117,13 @@ io.on('connection', (socket) => {
   socket.on('inviteOpponent', (data) => {
 
     console.log('data inside inviteOpponent: ', data)
-    const opponentId = data.opponentId;
-    console.log(`Opponent Invitation to id: ${opponentId}`)
-    PlayerModel.Model.findById(opponentId).then((opponent) => {
+    const opponentEmail = data.opponentEmail;
+    console.log(`Opponent Invitation to id: ${opponentEmail}`)
+    PlayerModel.Model.findOne({ email: opponentEmail }).then((opponent) => {
       if (opponent) {
         console.log('Opponent: ', opponent)
         // Create a unique room name based on invite sender and recipient socket IDs
-        const gamePlayersRoom = `game_room_${socket.id}_${opponentId}`;
+        const gamePlayersRoom = `game_room_${socket.id}_${opponent.socketId}`;
         // Add the invite sender to the room
         socket.join(gamePlayersRoom)
         // Emit the invitation to the specified opponent
@@ -130,7 +131,7 @@ io.on('connection', (socket) => {
           senderId: socket.id, 'gamePlayersRoom': gamePlayersRoom,
         });
       } else {
-        console.error(`Opponent not found for ID: ${opponentId}`);
+        console.error(`Opponent not found for ID: ${opponentEmail}`);
       }
     })
       .catch((error) => {
@@ -150,7 +151,7 @@ io.on('connection', (socket) => {
     console.log(`Players ${senderId} and ${recipientId} joined ${gamePlayersRoom}`);
   });
 
-  //TODO: I will implement eventRejection logic
+  //TODO: I will implement eventRejected logic
 
 
   // Handle single player move
@@ -192,12 +193,15 @@ io.on('connection', (socket) => {
 
   // Handle player moves
   socket.on('makeMove', (data) => {
-    console.log(data)
-    const currentPlayerSocketId = socket.id;
-    console.log('currentPlayerSocketId:', currentPlayerSocketId);
-    const { srcRow, srcCol, destRow, destCol } = data;
+    console.log(data);
+    const { move, gameBoard, gamePlayersRoom } = data;
+    console.log("move:", move);
+    io.to(gamePlayersRoom).emit("moveMade", {gameBoard});
+    // const currentPlayerSocketId = socket.id;
+    // console.log('currentPlayerSocketId:', currentPlayerSocketId);
+    // const { srcRow, srcCol, destRow, destCol } = data;
 
-    gameModel.makeMoveHandler(srcRow, srcCol, destRow, destCol, currentPlayerSocketId);
+    // gameModel.makeMoveHandler(srcRow, srcCol, destRow, destCol, currentPlayerSocketId);
   });
 
   // Handle disconnection
@@ -208,7 +212,9 @@ io.on('connection', (socket) => {
     PlayerModel.Model.findOneAndUpdate({ socketId: socket.id }, { $set: { socketId: null } }, { new: true })
       .then((player) => {
         if (player) {
-          console.log(`Player ${player._id} disconnected`);
+        // Remove player from memory (Will use redis for this later)
+        AuthController.loggedInPlayers.pop(player);
+          console.log(`Player ${player.name} with ID ${player._id} disconnected`);
         } else {
           console.error(`Player not found for socket ID: ${socket.id}`);
         }
