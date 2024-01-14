@@ -87,7 +87,7 @@ io.on('connection', (socket) => {
 
   // Associate socket ID with player
   socket.on('setSocketId', (data) => {
-    if (data) {
+    if(data){
       console.log('setSocketId event: ', data);
       const playerId = data.playerId
       // Find player by ID and set their socketId
@@ -105,54 +105,49 @@ io.on('connection', (socket) => {
         .catch((error) => {
           console.error('Error setting socket ID:', error);
         });
-
+    
     }
   });
 
   // Emitting 'inviteOpponent' event
   socket.on('inviteOpponent', (data) => {
+
     console.log('data: ', data)
     const opponentId = data.opponentId;
-    const inviteSenderSocketId = data.inviteSenderSocketId
     console.log(`Opponent Invitation to id: ${opponentId}`)
     PlayerModel.Model.findById(opponentId).then((opponent) => {
       if (opponent) {
         console.log('Opponent: ', opponent)
+        // Create a unique room name based on invite sender and recipient socket IDs
+        const gameRoom = `game_room_${socket.id}_${opponentId}`;
+        // Add the invite sender to the room
+        socket.join(gameRoom)
         // Emit the invitation to the specified opponent
         io.to(opponent.socketId).emit('invitation', {
-          inviteSenderSocketId: inviteSenderSocketId,
+          senderId: socket.id, 'gameRoom': gameRoom,
         });
       } else {
-        console.error(`Opponent not found for Opponent ID: ${opponentId}`);
+        console.error(`Player not found for ID: ${playerId}`);
       }
     })
       .catch((error) => {
-        console.error('Error finding opponent:', error);
+        console.error('Error setting socket ID:', error);
       });
   });
 
-  // Handle 'eventAccepted' event
-  socket.on('eventAccepted', (data) => {
-    console.log('data of invite:', data)
-    const receiverSocketId = data.receiverSocketId;
-    const senderSocketId = data.senderSocketId;
+// Handle 'eventAccepted' event
+socket.on('eventAccepted', (data) => {
+  const recipientId = socket.id;
+  const senderId = data.senderId;
 
-    // Create an object representing game players, based on invite sender and recipient socket IDs
-    // const gamePlayers = {senderSocketId: senderSocketId, receiverSocketId: receiverSocketId};
-    const gameRoomOfPlayers = `${senderSocketId}_${receiverSocketId};`
-    console.log('socket of receiver: ', socket.id)
-    console.log('socket of sender: ', senderSocketId)
-    console.log('socket of receiver from client side: ', receiverSocketId)
+  // Create a unique room name based on sender and recipient IDs
+  const gameRoom = data.gameRoom;
+  // Join both the sender and recipient to the unique game room
+  socket.join(gameRoom);
+  io.to(gameRoom).emit('joinedGameRoom', { gameRoom: gameRoom });
 
-    // Join both the sender and recipient to the unique game room
-    socket.join(gameRoomOfPlayers);
-    // socket.join(gamePlayers);
-    // Emit an event representing a two players matched in a game
-    // io.to(senderSocketId).to(receiverSocketId).emit('matchedInGame', gamePlayers);
-    io.to(gameRoomOfPlayers).emit('matchedInGame', {'receiverSocketId': receiverSocketId, 'senderSocketId': senderSocketId,
-    'gameRoomOfPlayers': gameRoomOfPlayers});
-    console.log(`Players ${senderSocketId} and ${receiverSocketId} are matched in a game`);
-  });
+  console.log(`Players ${senderId} and ${recipientId} joined ${gameRoom}`);
+});
 
 
   // Handle single player move
@@ -169,17 +164,17 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Handle new chat messages within a specific game room
+
+  // Handle new chat messages
   socket.on('message', (data) => {
     try {
-      console.log('Received message:', data);
-
-      const { content, gameRoom } = data;
-      //TODO: I will use the sender name later to identify a message sender
-      // Debug log on the server side
-      console.log(`Broadcasting message from ${socket.id} to game room ${gameRoom}: ${content}`);
-      io.to(gameRoom).emit('message', { senderId: socket.id, message: content });
-
+      console.log('data:', data);
+      // Broadcast the message to the common room
+    const {content, gameRoom } = data
+    //TODO: I will use the sender name later to identify a message sender
+    io.to(gameRoom).emit('message', { senderId: socket.id, message: content });
+      //const { player, message } = data;
+      //chatModel.sendMessage(player, message);
     } catch (error) {
       console.error('Error processing message:', error);
       socket.emit('error', { message: 'An error occurred while processing the message.' });
@@ -211,7 +206,7 @@ io.on('connection', (socket) => {
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
-
+  
     // Find player by socket ID and update socketId to null
     PlayerModel.Model.findOneAndUpdate({ socketId: socket.id }, { $set: { socketId: null } }, { new: true })
       .then((player) => {
@@ -229,4 +224,3 @@ io.on('connection', (socket) => {
 
 startServer();
 export default app; // Export the Express app instance
-
