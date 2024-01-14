@@ -95,6 +95,7 @@ io.on('connection', (socket) => {
           if (player) {
             player.socketId = socket.id;
             player.save(); // Save the updated player information
+            socket.to(socket.id).emit('modifiedPlayer', player)
             console.log('Player: ', player)
             console.log(`Player ${player.name} with ID ${playerId} connected with socket ID ${socket.id}`);
           } else {
