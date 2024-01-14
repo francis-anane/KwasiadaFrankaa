@@ -13,7 +13,7 @@ class GameModel {
 
     this.nextPlayer = null // The player to make move
     this.winner = null; // The winner of the game
-    
+
   }
 
   // Initialize the game board
@@ -28,43 +28,18 @@ class GameModel {
 
   setPlayerColor() {
     const symbolColors = ['red', 'blue'];
-  
+
     // Choose a random index from the symbolColors array
     const randomIndex = Math.floor(Math.random() * symbolColors.length);
-  
+
     // Assign the chosen color to the 'player' variable
     const playerColor = symbolColors[randomIndex];
-  
+
     // Assign the other color to the 'opponent' variable
     const opponentColor = symbolColors.find((name, index) => index !== randomIndex);
-  
+
     return { playerColor, opponentColor };
   }
-  
-  
-
-  // Add a player to the game
-  // addPlayer(playerId, socketId) {
-  //   let playerData;
-
-  //   // Fetch player data by ID
-  //   return PlayerModel.Model.findById(playerId)
-  //     .then((foundPlayer) => {
-  //       if (!foundPlayer) {
-  //         throw new Error('Error fetching player data');
-  //       }
-
-  //       playerData = foundPlayer;
-  //       const symbolColor = this.players.length === 0 ? 'red' : 'blue';
-  //       this.players.push({ ...playerData, symbolColor, socketId });
-
-  //       return { success: true, player: { ...playerData, symbolColor } };
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error adding player to the game:', error.message);
-  //       throw new Error('Internal Server Error');
-  //     });
-  // }
 
   // Method to simulate computer opponent game play
   singlePlayerGame(player) {
@@ -170,40 +145,22 @@ class GameModel {
       }
 
       // Set the colors that represents symbol for player and opponent for a new game
-      const {playerColor, opponentColor} = this.setPlayerColor();
+      const { playerColor, opponentColor } = this.setPlayerColor();
       console.log('playerColor', playerColor);
       console.log('opponentColor', opponentColor);
       player.playerSymbol = playerColor;
       player.opponentSymbol = opponentColor;
 
       console.log('player', player);
-      if(playerColor === 'red') {
+      if (playerColor === 'red') {
         player.gameBoard[1][1] = 'red';
       }
-      else{
+      else {
         player.isYourTurn = true;
       }
       return player;
     } catch (error) {
       console.error(error.message);
-    }
-  }
-
-    // Check for a winner on the game board
-setWinner(player) {
-  try {
-    console.log('player', player);
-    // Check for horizontal wins
-    for (let row = 0; row < 3; row++) {
-      const rowValues = player.gameBoard[row].join('');
-      if (rowValues === player.playerSymbol.repeat(3)) {
-        player.hasWon = true;
-        return player;
-      }
-      if (rowValues === player.opponentSymbol.repeat(3)) {
-        player.hasWon = false;
-        return player;
-      }
     }
 
     // Check for vertical wins
@@ -231,30 +188,45 @@ setWinner(player) {
       player.hasWon = false;
       return player;
     }
-
-    // If no winner is found, return null
-    return null;
-  } catch (error) {
-    console.error("Error in setWinner function:", error);
-    // Handle the error or rethrow it if needed
-    throw error;
   }
-}
 
   // Multiplayer game play logic
-  multiplayerGame(srcRow, srcCol, destRow, destCol, player){
-    if(player.gameBoard[destRow][destCol] === ''){
-    player.isYourTurn = !player.isYourTurn;
-    player.gameBoard[destRow][destCol] = player.playerSymbol;
-    player.moveCount += 1;
-    player.gameBoard[srcRow][srcCol] = '';
+  multiplayerGame(srcRow, srcCol, destRow, destCol, player) {
+    if (player.gameBoard[destRow][destCol] === '') {
+      player.isYourTurn = !player.isYourTurn;
+      player.gameBoard[destRow][destCol] = player.playerSymbol;
+      player.moveCount += 1;
+      player.gameBoard[srcRow][srcCol] = '';
     }
   }
-  // Remove a player based on socket ID
-  removePlayer(playerId) {
-    this.players = this.players.filter((player) => player.socketId !== playerId);
+
+  // Check for a winner on the game board
+  setWinner(player) {
+    try {
+      console.log('player', player);
+      // Check for horizontal wins
+      for (let row = 0; row < 3; row++) {
+        const rowValues = player.gameBoard[row].join('');
+        if (rowValues === player.playerSymbol.repeat(3)) {
+          player.hasWon = true;
+          return player;
+        }
+        if (rowValues === player.opponentSymbol.repeat(3)) {
+          player.hasWon = false;
+          return player;
+        }
+      }
+
+      // If no winner is found, return null
+      return null;
+    } catch (error) {
+      console.error("Error in setWinner function:", error);
+      // Handle the error or rethrow it if needed
+      throw error;
+    }
   }
-  
+
+
 }
 
 export default GameModel;

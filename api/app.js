@@ -17,6 +17,7 @@ import GameModel from './models/GameModel.js';
 import AuthModel from './models/AuthModel.js';
 import redisModel from './utils/redis.js';
 import PlayerModel from './models/PlayerModel.js';
+import AuthController from './controllers/AuthController.js'
 import './utils/db.js';
 
 const app = express();
@@ -87,17 +88,22 @@ io.on('connection', (socket) => {
 
   // Associate socket ID with player on connection
   socket.on('setSocketId', (data) => {
-    if(data){
-      const playerId = data.playerId
+    if (data) {
+      const playerId = data.playerId;
       // Find player by ID and set their socketId
       PlayerModel.Model.findById(playerId)
         .then((player) => {
           if (player) {
             player.socketId = socket.id;
-            player.save(); // Save the updated player information
-            socket.to(socket.id).emit('modifiedPlayer', player)
-            console.log('Player: ', player)
-            console.log(`Player ${player.name} with ID ${playerId} connected with socket ID ${socket.id}`);
+            player.save()  // Save the updated player information
+              .then(() => {
+                io.to(socket.id).emit('modifiedPlayer', player);
+                console.log('Player: ', player);
+                console.log(`Player ${player.name} with ID ${playerId} connected with socket ID ${socket.id}`);
+              })
+              .catch((saveError) => {
+                console.error('Error saving player information:', saveError);
+              });
           } else {
             console.error(`Player not found for ID: ${playerId}`);
           }
@@ -105,21 +111,19 @@ io.on('connection', (socket) => {
         .catch((error) => {
           console.error('Error setting socket ID:', error);
         });
-    
     }
   });
-
   // Listening for 'inviteOpponent' event to send invites to opponents
   socket.on('inviteOpponent', (data) => {
 
     console.log('data inside inviteOpponent: ', data)
-    const opponentId = data.opponentId;
-    console.log(`Opponent Invitation to id: ${opponentId}`)
-    PlayerModel.Model.findById(opponentId).then((opponent) => {
+    const opponentEmail = data.opponentEmail;
+    console.log(`Opponent Invitation to id: ${opponentEmail}`)
+    PlayerModel.Model.findOne({ email: opponentEmail }).then((opponent) => {
       if (opponent) {
         console.log('Opponent: ', opponent)
         // Create a unique room name based on invite sender and recipient socket IDs
-        const gamePlayersRoom = `game_room_${socket.id}_${opponentId}`;
+        const gamePlayersRoom = `game_room_${socket.id}_${opponent.socketId}`;
         // Add the invite sender to the room
         socket.join(gamePlayersRoom)
         // Emit the invitation to the specified opponent
@@ -127,7 +131,7 @@ io.on('connection', (socket) => {
           senderId: socket.id, 'gamePlayersRoom': gamePlayersRoom,
         });
       } else {
-        console.error(`Opponent not found for ID: ${opponentId}`);
+        console.error(`Opponent not found for ID: ${opponentEmail}`);
       }
     })
       .catch((error) => {
@@ -135,17 +139,19 @@ io.on('connection', (socket) => {
       });
   });
 
-// Handle 'eventAccepted' event
-socket.on('eventAccepted', (data) => {
-  const recipientId = socket.id;
-  const senderId = data.senderId;
-  const gamePlayersRoom = data.gamePlayersRoom;
-  // Join the recipient to the unique game room which the invite sender is joined-in
-  socket.join(gamePlayersRoom);
-  io.to(gamePlayersRoom).emit('joinedGameRoom', { gamePlayersRoom: gamePlayersRoom, recipientId, senderId});
+  // Handle 'eventAccepted' event
+  socket.on('eventAccepted', (data) => {
+    const recipientId = socket.id;
+    const senderId = data.senderId;
+    const gamePlayersRoom = data.gamePlayersRoom;
+    // Join the recipient to the unique game room which the invite sender is joined-in
+    socket.join(gamePlayersRoom);
+    io.to(gamePlayersRoom).emit('joinedGameRoom', { gamePlayersRoom: gamePlayersRoom, recipientId, senderId });
 
-  console.log(`Players ${senderId} and ${recipientId} joined ${gamePlayersRoom}`);
-});
+    console.log(`Players ${senderId} and ${recipientId} joined ${gamePlayersRoom}`);
+  });
+
+  //TODO: I will implement eventRejected logic
 
 
   // Handle single player move
@@ -168,9 +174,11 @@ socket.on('eventAccepted', (data) => {
     try {
       console.log('data:', data);
       // Broadcast the message to the common room
-    const {content, gamePlayersRoom } = data
-    //TODO: I will use the sender name later to identify a message sender
-    io.to(gamePlayersRoom).emit('message', { senderId: socket.id, message: content });
+      const { content, sender, gamePlayersRoom } = data
+      // Emit the message event to the gamePlayersRoom with an object property, "sender"
+      // which is the player sending the message and the property "message" which is the content to send,
+      // and the socket id of the client for comparison at the client side
+      io.to(gamePlayersRoom).emit('message', { sender: sender, message: content, senderSocketId: socket.id });
     } catch (error) {
       console.error('Error processing message:', error);
       socket.emit('error', { message: 'An error occurred while processing the message.' });
@@ -185,23 +193,28 @@ socket.on('eventAccepted', (data) => {
 
   // Handle player moves
   socket.on('makeMove', (data) => {
-    console.log(data)
-    const currentPlayerSocketId = socket.id;
-    console.log('currentPlayerSocketId:', currentPlayerSocketId);
-    const { srcRow, srcCol, destRow, destCol } = data;
+    console.log(data);
+    const { move, gameBoard, gamePlayersRoom } = data;
+    console.log("move:", move);
+    io.to(gamePlayersRoom).emit("moveMade", {gameBoard});
+    // const currentPlayerSocketId = socket.id;
+    // console.log('currentPlayerSocketId:', currentPlayerSocketId);
+    // const { srcRow, srcCol, destRow, destCol } = data;
 
-    gameModel.makeMoveHandler(srcRow, srcCol, destRow, destCol, currentPlayerSocketId);
+    // gameModel.makeMoveHandler(srcRow, srcCol, destRow, destCol, currentPlayerSocketId);
   });
 
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
-  
+
     // Find player by socket ID and update socketId to null
     PlayerModel.Model.findOneAndUpdate({ socketId: socket.id }, { $set: { socketId: null } }, { new: true })
       .then((player) => {
         if (player) {
-          console.log(`Player ${player._id} disconnected`);
+        // Remove player from memory (Will use redis for this later)
+        AuthController.loggedInPlayers.pop(player);
+          console.log(`Player ${player.name} with ID ${player._id} disconnected`);
         } else {
           console.error(`Player not found for socket ID: ${socket.id}`);
         }
