@@ -83,9 +83,9 @@ app.use('/api', playerRouter);
 io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
 
-  const chatModel = new ChatModel(io);
-  const gameModel = new GameModel(io);
-
+  //const chatModel = new ChatModel(io);
+  // create a gameModel instance for the current player
+  //const gameModel = new GameModel(io);
   // Associate socket ID with player on connection
   socket.on('setSocketId', (data) => {
     if (data) {
@@ -128,7 +128,7 @@ io.on('connection', (socket) => {
         socket.join(gamePlayersRoom)
         // Emit the invitation to the specified opponent
         io.to(opponent.socketId).emit('invitation', {
-          senderId: socket.id, 'gamePlayersRoom': gamePlayersRoom,
+          senderSocketId: socket.id, receiverSocketId: opponent.socketId, 'gamePlayersRoom': gamePlayersRoom,
         });
       } else {
         console.error(`Opponent not found for ID: ${opponentEmail}`);
@@ -141,14 +141,41 @@ io.on('connection', (socket) => {
 
   // Handle 'eventAccepted' event
   socket.on('eventAccepted', (data) => {
-    const recipientId = socket.id;
-    const senderId = data.senderId;
+    const recipientSocketId = socket.id;
+    const senderSocketId = data.senderSocketId;
     const gamePlayersRoom = data.gamePlayersRoom;
+    // update data with recipient id
+    data['recipientSocketId'] = recipientSocketId;
+
+
     // Join the recipient to the unique game room which the invite sender is joined-in
     socket.join(gamePlayersRoom);
-    io.to(gamePlayersRoom).emit('joinedGameRoom', { gamePlayersRoom: gamePlayersRoom, recipientId, senderId });
 
-    console.log(`Players ${senderId} and ${recipientId} joined ${gamePlayersRoom}`);
+
+    // create a gameModel instance for the current players
+    const gameModel = new GameModel(io);
+
+    // Set the colors that represents symbol for player and opponent for a new game
+    const { playerColor, opponentColor } = gameModel.setPlayerColorSymbol()
+
+    PlayerModel.Model.findOne({ socketId: senderSocketId }).then((player) => {
+      if (player) {
+        console.log('Player: ', player)
+        player.playerSymbol = playerColor
+        player.opponentSymbol = opponentColor
+        player.save();
+        io.to(gamePlayersRoom).emit('joinedGameRoom', { recipientSocketId: recipientSocketId, senderSocketId: senderSocketId, gamePlayersRoom: gamePlayersRoom });
+        console.log(`Players ${senderSocketId} and ${recipientSocketId} joined ${gamePlayersRoom}`);
+
+
+      } else {
+        console.error(`Player not found, symbol color not set`);
+      }
+    })
+      .catch((error) => {
+        console.error('Error Setting symbols for players:', error);
+      });
+
   });
 
   //TODO: I will implement eventRejected logic
@@ -196,24 +223,31 @@ io.on('connection', (socket) => {
     console.log(data);
     const { move, gameBoard, gamePlayersRoom } = data;
     console.log("move:", move);
-    io.to(gamePlayersRoom).emit("moveMade", {gameBoard});
+    const { srcRow, srcCol, destRow, destCol } = move
+    gameBoard[srcRow][srcCol] = ''
+    io.to(gamePlayersRoom).emit("moveMade", { gameBoard });
     // const currentPlayerSocketId = socket.id;
     // console.log('currentPlayerSocketId:', currentPlayerSocketId);
-    // const { srcRow, srcCol, destRow, destCol } = data;
+
 
     // gameModel.makeMoveHandler(srcRow, srcCol, destRow, destCol, currentPlayerSocketId);
   });
+  
+  //End game event
+  socket.on('endGame', (data) => {
+    console.log(`Game ended`, data);
+  })
 
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
 
     // Find player by socket ID and update socketId to null
-    PlayerModel.Model.findOneAndUpdate({ socketId: socket.id }, { $set: { socketId: null } }, { new: true })
+    PlayerModel.Model.findOneAndUpdate({ socketId: socket.id }, { $set: { socketId: null, playerSymbol: null, opponentSymbol: null, } }, { new: true })
       .then((player) => {
         if (player) {
-        // Remove player from memory (Will use redis for this later)
-        AuthController.loggedInPlayers.pop(player);
+          // Remove player from memory (Will use redis for this later)
+          AuthController.loggedInPlayers.pop(player);
           console.log(`Player ${player.name} with ID ${player._id} disconnected`);
         } else {
           console.error(`Player not found for socket ID: ${socket.id}`);

@@ -26,7 +26,7 @@ class GameModel {
     return this.gameBoard;
   }
 
-  setPlayerColor() {
+  setPlayerColorSymbol() {
     const symbolColors = ['red', 'blue'];
 
     // Choose a random index from the symbolColors array
@@ -145,7 +145,7 @@ class GameModel {
       }
 
       // Set the colors that represents symbol for player and opponent for a new game
-      const { playerColor, opponentColor } = this.setPlayerColor();
+      const { playerColor, opponentColor } = this.setPlayerColorSymbol();
       console.log('playerColor', playerColor);
       console.log('opponentColor', opponentColor);
       player.playerSymbol = playerColor;
