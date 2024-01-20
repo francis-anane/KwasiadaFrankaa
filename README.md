@@ -88,6 +88,7 @@ The goal of this project is to provide a platform for players to invite opponent
 - Frontend (Android): Kotlin, Android Studio
 - Frontend (Browser): HTML, CSS, JavaScript
 
+
 ## Getting Started
 
 1. Clone the repository.
